@@ -10,12 +10,16 @@ type BottomSheetProps = {
   title?: string;
   /** 제목 아래 작은 안내 문구 */
   description?: string;
+  /** 위쪽 손잡이 막대. 디자인에는 없어서 기본 꺼짐 */
+  showHandle?: boolean;
+  /** 제목 옆 X 버튼. 디자인에는 없어서 기본 꺼짐 (바깥 클릭으로 닫힘) */
+  showClose?: boolean;
   children: React.ReactNode;
 };
 
 /**
  * 아래에서 올라오는 바텀시트 (390px 앱 폭 안에서 보임)
- * - 바깥 클릭 또는 닫기(X)로 닫힘
+ * - 바깥(어두운 부분) 클릭으로 닫힘. X 버튼은 showClose로 켤 수 있음
  * - 열려 있는 동안 뒤 화면은 스크롤되지 않음
  *
  * 사용 예)
@@ -23,7 +27,15 @@ type BottomSheetProps = {
  *     ...
  *   </BottomSheet>
  */
-export default function BottomSheet({ open, onClose, title, description, children }: BottomSheetProps) {
+export default function BottomSheet({
+  open,
+  onClose,
+  title,
+  description,
+  showHandle = false,
+  showClose = false,
+  children,
+}: BottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,31 +73,33 @@ export default function BottomSheet({ open, onClose, title, description, childre
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="relative w-full rounded-t-3xl bg-white px-5 pt-3 outline-none transition-transform duration-200 motion-reduce:transition-none starting:translate-y-full"
-        style={{ maxWidth: APP_MAX_WIDTH, paddingBottom: "calc(20px + env(safe-area-inset-bottom))" }}
+        className="relative w-full rounded-t-3xl bg-white px-5 pt-6 text-black outline-none transition-transform duration-200 motion-reduce:transition-none starting:translate-y-full"
+        style={{ maxWidth: APP_MAX_WIDTH, paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
       >
-        <div aria-hidden className="mx-auto mb-3 h-1 w-10 rounded-full bg-gray-300" />
+        {showHandle && <div aria-hidden className="mx-auto mb-3 h-1 w-10 rounded-full bg-gray-300" />}
 
         {(title || description) && (
           <div className="flex items-start gap-2">
             <div className="flex-1">
-              {title && <h2 className="text-title-lg font-semibold">{title}</h2>}
+              {title && <h2 className="text-heading-sm font-bold">{title}</h2>}
               {description && <p className="mt-1 text-body-md text-gray-700">{description}</p>}
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="닫기"
-              className="-mr-2 flex size-10 shrink-0 items-center justify-center rounded-full active:bg-gray-100"
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                <path d="M6 6l12 12M18 6L6 18" />
-              </svg>
-            </button>
+            {showClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="닫기"
+                className="-mr-2 flex size-10 shrink-0 items-center justify-center rounded-full active:bg-gray-100"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </button>
+            )}
           </div>
         )}
 
-        <div className={title || description ? "mt-4" : undefined}>{children}</div>
+        <div className={title || description ? "mt-6" : undefined}>{children}</div>
       </div>
     </div>
   );
