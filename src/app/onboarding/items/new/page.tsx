@@ -1,9 +1,18 @@
-// 0-4 품목 추가 (C 담당) - 뼈대용 임시 화면
-export default function Page() {
+import { Suspense } from "react";
+import ItemForm from "@/components/onboarding/ItemForm";
+
+// 0-4 품목 추가 / 수정 (C)
+// 수정할 때는 /onboarding/items/new?id=품목ID
+// (?값을 읽는 부분은 cacheComponents 설정 때문에 <Suspense> 안에 둔다)
+export default function Page({ searchParams }: PageProps<"/onboarding/items/new">) {
   return (
-    <main className="px-5 py-6">
-      <h1 className="text-heading-sm font-bold">0-4 품목 추가</h1>
-      <p className="mt-2 text-body-md text-gray-600">준비 중인 화면이에요.</p>
-    </main>
+    <Suspense fallback={null}>
+      <ItemFormWithParams searchParams={searchParams} />
+    </Suspense>
   );
+}
+
+async function ItemFormWithParams({ searchParams }: Pick<PageProps<"/onboarding/items/new">, "searchParams">) {
+  const { id } = await searchParams;
+  return <ItemForm editId={typeof id === "string" ? id : undefined} />;
 }

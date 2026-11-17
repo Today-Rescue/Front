@@ -49,15 +49,15 @@ export default function HeaderBar({ title, backHref, onBack, step, progress, rig
       </button>
 
       {title && <h1 className="flex-1 truncate text-title-lg font-semibold">{title}</h1>}
-      {!title && <div className="flex-1" />}
+      {!title && !progress && <div className="flex-1" />}
 
       {progress && (
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1">
+        <div className="flex flex-1 items-center gap-3 pl-2">
+          <div className="flex flex-1 gap-1">
             {Array.from({ length: progress.total }, (_, i) => (
               <span
                 key={i}
-                className={`h-1 w-6 rounded-full ${i < progress.current ? "bg-primary-500" : "bg-gray-200"}`}
+                className={`h-1 flex-1 rounded-full ${i < progress.current ? "bg-primary-500" : "bg-gray-200"}`}
               />
             ))}
           </div>
