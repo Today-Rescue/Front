@@ -1,0 +1,173 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ROUTES } from "@/lib/routes";
+import { formatAmPm, formatNumber } from "@/lib/time";
+import type { HomeData } from "@/types/home";
+
+/** ①: 매대 촬영 버튼 + 스캔 결과·바로 팔기 + AI 세트 추천 */
+export default function ClosingSection({
+  data,
+  onAcceptBundle,
+}: {
+  data: HomeData;
+  onAcceptBundle: () => void;
+}) {
+  const router = useRouter();
+  const { lastScan, saleLive, bundle, bundleOnSale } = data;
+
+  const startBulkSale = () => {
+    // TODO(C): 추천값 그대로 마켓에 게시 → POST /stores/{id}/campaigns/discount (B와 요청 형식 맞추기)
+    router.push(ROUTES.saleStatus);
+  };
+
+  return (
+    <>
+      {/* 3. 매대 촬영 버튼 */}
+      <div className="mx-5 mt-4">
+        <Link
+          href={ROUTES.scan}
+          className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary-500 text-label-lg font-semibold text-white active:bg-primary-600"
+        >
+          <CameraIcon />
+          지금 매대 촬영하고 남은 수량 파악하기
+        </Link>
+        <p className="mt-2 text-center text-caption text-gray-600">
+          {lastScan
+            ? `마지막 스캔 ${formatAmPm(lastScan.time)} · 매대 ${lastScan.shelves}곳 인식`
+            : "아직 마감 스캔 기록이 없어요"}
+        </p>
+      </div>
+
+      {/* 4. 스캔 결과 · 바로 팔기 */}
+      <section className="mt-7 px-5">
+        <h2 className="text-title-lg font-bold">스캔 결과 · 바로 팔기</h2>
+
+        {lastScan ? (
+          <div className="mt-3 rounded-2xl bg-gray-100 p-5">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-body-md text-gray-700">오늘 만든 {lastScan.madeTotal}개 중 남은 재고</p>
+                <p className="text-display-sm font-bold">
+                  {lastScan.remaining}
+                  <span className="text-title-lg">개</span>
+                </p>
+              </div>
+              <div className="text-right text-caption text-gray-700">
+                <p>
+                  위험 품목 <b className="font-semibold text-error-300">{lastScan.riskKinds}종</b>
+                </p>
+                <p>
+                  주의 품목 <b className="font-semibold text-error-300">{lastScan.cautionKinds}종</b>
+                </p>
+              </div>
+            </div>
+
+            {saleLive ? (
+              <Link
+                href={ROUTES.saleStatus}
+                className="mt-4 flex h-14 w-full items-center justify-center rounded-xl bg-primary-500 text-label-lg font-semibold text-white"
+              >
+                마켓 게시 중 · 현황 보기
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={startBulkSale}
+                className="mt-4 h-14 w-full rounded-xl bg-primary-500 text-label-lg font-semibold text-white active:bg-primary-600"
+              >
+                일괄 {lastScan.recommendedDiscount}% 마감 세일 시작하기
+              </button>
+            )}
+
+            <div className="mt-3 flex items-center gap-2 text-caption text-gray-700">
+              <span>올리는 곳</span>
+              <span className="flex items-center gap-1 rounded-full border border-gray-300 bg-white px-2.5 py-1 font-medium text-black">
+                <span className="size-2.5 rounded-full bg-success-100" aria-hidden />
+                오늘구조대 마켓
+              </span>
+              <Link href={ROUTES.saleDiscount} className="ml-auto font-medium text-primary-600 underline underline-offset-2">
+                할인율·품목 변경
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-3 rounded-2xl border border-dashed border-gray-400 px-5 py-8 text-center text-body-md text-gray-600">
+            매대를 찍으면 남은 빵과
+            <br />
+            할인할 빵을 바로 정리해 드려요
+          </div>
+        )}
+      </section>
+
+      {/* 5. AI 세트 추천 */}
+      {lastScan && bundle && (
+        <section className="mx-5 mt-4 rounded-2xl border border-primary-100 bg-primary-50 p-5">
+          <p className="flex items-center gap-1.5 text-label-md font-semibold text-primary-600">
+            <span className="size-4 rounded bg-primary-300" aria-hidden />
+            AI 세트 추천 · 오늘의 추천 묶음
+          </p>
+
+          <div className="mt-3 flex items-center gap-4">
+            <span className="flex size-16 items-center justify-center rounded-xl border border-gray-200 bg-white" aria-hidden>
+              <span className="size-8 rounded-md bg-primary-200" />
+            </span>
+            <div>
+              <p className="text-title-lg font-semibold">{bundle.name}</p>
+              <p className="text-title-lg font-bold text-primary-600">{formatNumber(bundle.price)}원</p>
+            </div>
+          </div>
+
+          <p className="mt-3 text-body-md text-gray-800">
+            재고가 많은{" "}
+            {bundle.items.map((it, i) => (
+              <span key={it.name}>
+                {i > 0 && "과 "}
+                <b className="font-semibold text-black">
+                  {it.name}({it.qty}개)
+                </b>
+              </span>
+            ))}
+            를 남는 빵이 가장 적게 묶어 ‘{bundle.name}’ <b className="font-semibold text-black">{bundle.packs}팩</b>으로
+            구성했어요. {bundleOnSale ? "" : "지금 바로 판매 올릴까요?"}
+          </p>
+
+          {bundleOnSale ? (
+            <Link
+              href={ROUTES.saleStatus}
+              className="mt-4 flex h-12 w-full items-center justify-center rounded-xl bg-white text-label-md font-semibold text-primary-600"
+            >
+              ● 판매 중 · 현황 보기
+            </Link>
+          ) : (
+            <div className="mt-4 flex gap-2">
+              <Link
+                href={ROUTES.saleBundle}
+                className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-200 bg-white text-label-md font-semibold"
+              >
+                구성 수정
+              </Link>
+              <button
+                type="button"
+                onClick={onAcceptBundle}
+                className="h-12 flex-[1.4] rounded-xl bg-primary-100 text-label-md font-semibold text-primary-600 active:bg-primary-200"
+              >
+                수락 및 판매
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+    </>
+  );
+}
+
+function CameraIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
+      <circle cx="12" cy="13.5" r="3.5" />
+    </svg>
+  );
+}
