@@ -23,7 +23,8 @@ export default function MorningSection({ data }: { data: HomeData }) {
             <div className="min-w-0 flex-1">
               <p className="text-title-sm font-semibold">최초 진열 기록 완료</p>
               <p className="text-caption text-gray-700">
-                {formatAmPm(firstDisplay.time)} · 매대 {firstDisplay.shelves}곳 · {firstDisplay.count}개
+                {firstDisplay.time ? formatAmPm(firstDisplay.time) : "직접 입력"}
+                {firstDisplay.shelves ? ` · 매대 ${firstDisplay.shelves}곳` : ""} · {firstDisplay.count}개
               </p>
             </div>
             <Link href={ROUTES.scan} className="shrink-0 text-label-md font-semibold text-primary-600">
