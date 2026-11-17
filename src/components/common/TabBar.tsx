@@ -27,7 +27,7 @@ export default function TabBar() {
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
                 className={`flex h-full flex-col items-center justify-center gap-1 text-caption ${
-                  active ? "font-bold text-primary-600" : "font-medium text-gray-500"
+                  active ? "font-bold text-primary-600" : "font-medium text-gray-400"
                 }`}
               >
                 <TabIcon tab={tab.key} active={active} />

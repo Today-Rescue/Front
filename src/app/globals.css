@@ -24,16 +24,16 @@
   --color-gray-900: #2c2c2c;
 
   /* ---------- Primary (주황) ---------- */
-  /* 피그마 라벨의 hex가 전부 #FBBC04로 잘못 적혀 있어서, 화면에서 직접 뽑은 값. 디자이너 확인 필요 */
-  --color-primary-50: #fff2ec;
-  --color-primary-100: #ffece5;
-  --color-primary-200: #ffdbcb;
+  /* 피그마 라벨의 hex가 #FBBC04로 잘못 적혀 있어서, 디자인 PDF의 실제 색을 뽑아 넣은 값 */
+  --color-primary-50: #fff1eb; /* 연한 주황 카드 배경 */
+  --color-primary-100: #ffede5;
+  --color-primary-200: #ffdbcc;
   --color-primary-300: #ff9466;
-  --color-primary-400: #ff7133;
-  --color-primary-500: #ff4c01; /* 메인 주황: 주 버튼, 현재 탭 */
-  --color-primary-600: #cc3e00;
+  --color-primary-400: #ff7033;
+  --color-primary-500: #ff4c00; /* 메인 주황: 주 버튼 */
+  --color-primary-600: #cc3d00; /* 진한 주황: 현재 탭 글자, 강조 라벨 */
   --color-primary-700: #992e00;
-  --color-primary-800: #651e00;
+  --color-primary-800: #661e00;
   --color-primary-900: #330f00;
 
   /* ---------- True (초록: 완판, 감소 등 좋은 상태) ---------- */
@@ -43,7 +43,7 @@
   --color-success-400: #085630;
 
   /* ---------- False (빨강: 위험, 폐기) ---------- */
-  --color-error-100: #fbc5c0;
+  --color-error-100: #f8c5c0;
   --color-error-200: #ee695d;
   --color-error-300: #d53d30;
   --color-error-400: #81251d;

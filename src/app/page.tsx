@@ -1,25 +1,39 @@
-import Link from "next/link";
+import { Suspense } from "react";
+import HomeScreen from "@/components/home/HomeScreen";
 
-// 오늘 메인 (C 담당) - 오전-1 / ① 마감 메인을 시간대에 따라 전환할 예정.
-// 지금은 뼈대 확인용 임시 화면.
-export default function Home() {
+/**
+ * 오늘 메인 (C) - 오전-1 / ① 마감 메인
+ *
+ * 테스트용 주소:
+ *   /?mode=morning              오전 판매 모드
+ *   /?mode=closing              오후 마감 모드
+ *   /?now=18:30                 지금 시각을 18:30으로 가정 (모드 자동 전환 확인)
+ *   /?data=empty                기록이 하나도 없는 첫날 상태
+ *   /?mock=1                    서버 안 부르고 mock 데이터만
+ *   (같이 쓰기: /?mode=closing&data=empty)
+ *
+ * 이 프로젝트는 cacheComponents 설정이 켜져 있어서,
+ * 주소의 ?값(searchParams)을 읽는 부분은 <Suspense> 안에 넣어야 빌드가 된다.
+ */
+export default function Home({ searchParams }: PageProps<"/">) {
   return (
-    <main className="px-5 py-6">
-      <h1 className="text-heading-lg font-bold">오늘구조대</h1>
-      <p className="mt-1 text-body-md text-gray-600">뼈대 확인용 임시 메인 화면이에요.</p>
+    <Suspense fallback={<div className="min-h-dvh" />}>
+      <HomeWithParams searchParams={searchParams} />
+    </Suspense>
+  );
+}
 
-      <section className="mt-6 rounded-2xl bg-primary-50 p-5">
-        <p className="text-label-md font-semibold text-primary-600">오전 판매 모드</p>
-        <p className="mt-1 text-title-lg font-semibold">
-          마감 알림까지 <span className="text-primary-500">3시간 55분</span>
-        </p>
-      </section>
+async function HomeWithParams({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
+  const sp = await searchParams;
+  const pick = (key: string) => (typeof sp[key] === "string" ? (sp[key] as string) : undefined);
+  const mode = pick("mode");
 
-      <ul className="mt-6 space-y-2 text-body-md">
-        <li><Link className="text-primary-600 underline" href="/onboarding">온보딩 (0-0)</Link></li>
-        <li><Link className="text-primary-600 underline" href="/onboarding/store">가게 정보 (0-1)</Link></li>
-        <li><Link className="text-primary-600 underline" href="/dashboard">대시보드 (⑦)</Link></li>
-      </ul>
-    </main>
+  return (
+    <HomeScreen
+      mode={mode === "morning" || mode === "closing" ? mode : undefined}
+      now={pick("now")}
+      empty={pick("data") === "empty"}
+      mockOnly={pick("mock") === "1"}
+    />
   );
 }
