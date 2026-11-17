@@ -3,6 +3,8 @@
 import OverlayFrame, { CardIcon } from "./OverlayFrame";
 
 type FailedOverlayProps = {
+  /** notFound = 찾은 품목 없음(①-5 시안), dark = 사진이 너무 어두움(시안 없음, 같은 틀에 문구만 다르게) */
+  variant?: "notFound" | "dark";
   /** 두 번 연속 못 찾았으면 true. '직접 입력해도 돼요' 안내가 추가로 나옴 */
   failedTwice: boolean;
   /** 앨범에서 사진 고르기 */
@@ -14,18 +16,30 @@ type FailedOverlayProps = {
 };
 
 /** ①-5 인식 실패 · 직접 입력 */
-export default function FailedOverlay({ failedTwice, onGallery, onRetake, onManual }: FailedOverlayProps) {
+export default function FailedOverlay({ variant = "notFound", failedTwice, onGallery, onRetake, onManual }: FailedOverlayProps) {
   return (
     <OverlayFrame
-      label="찾은 품목이 없어요"
+      label={variant === "dark" ? "사진이 너무 어두워요" : "찾은 품목이 없어요"}
       card={
         <>
           <CardIcon />
-          <h2 className="mt-1 text-title-lg font-bold break-keep">찾은 품목이 없어요</h2>
+          <h2 className="mt-1 text-title-lg font-bold break-keep">
+            {variant === "dark" ? "사진이 너무 어두워요" : "찾은 품목이 없어요"}
+          </h2>
           <p className="mt-1 text-caption leading-4 break-keep text-gray-700">
-            빵이 가려졌거나 화면 밖에 있을 수 있어요.
-            <br />
-            진열대 전체가 보이도록 다시 찍어도 좋아요.
+            {variant === "dark" ? (
+              <>
+                밝은 곳에서 다시 찍어주세요.
+                <br />
+                플래시를 켜고 찍어도 좋아요.
+              </>
+            ) : (
+              <>
+                빵이 가려졌거나 화면 밖에 있을 수 있어요.
+                <br />
+                진열대 전체가 보이도록 다시 찍어도 좋아요.
+              </>
+            )}
           </p>
           {failedTwice && (
             <p className="mt-4 rounded-xl bg-primary-50 px-3 py-1.5 text-caption leading-4 break-keep text-primary-700">

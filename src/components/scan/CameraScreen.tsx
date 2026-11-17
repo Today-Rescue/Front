@@ -1,11 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useImperativeHandle, useRef, useState } from "react";
 import PurposeSheet from "./PurposeSheet";
 import type { ScanPurpose, ShotPhoto } from "./types";
 import { useCamera, type ShotQuality } from "./useCamera";
 
+/** 바깥(페이지)에서 촬영 화면을 조작할 때 쓰는 기능 */
+export type CameraScreenHandle = {
+  /** 갤러리(앨범) 선택창 열기 */
+  openGallery: () => void;
+  /** 찍어 둔 사진을 모두 비우고 처음 상태로 */
+  reset: () => void;
+};
+
 type CameraScreenProps = {
+  ref?: React.Ref<CameraScreenHandle>;
   /** 무엇을 찍는 중인지. open = 최초 진열(오전-3), close = 재고 기록(①-2) */
   purpose: ScanPurpose;
   /** '바꾸기' 시트에서 '지금 추천'으로 표시할 목적. 없으면 지금 목적 */
@@ -50,6 +59,7 @@ function makePhoto(blob: Blob): ShotPhoto {
  * 카메라를 못 쓰면 촬영 버튼이 기기 카메라 앱(사진 선택)으로 바뀜
  */
 export default function CameraScreen({
+  ref,
   purpose,
   recommended,
   notifyTime,
@@ -74,6 +84,15 @@ export default function CameraScreen({
   useEffect(() => {
     return () => photosRef.current.forEach((photo) => URL.revokeObjectURL(photo.url));
   }, []);
+
+  useImperativeHandle(ref, () => ({
+    openGallery: () => galleryInputRef.current?.click(),
+    reset: () => {
+      photosRef.current.forEach((photo) => URL.revokeObjectURL(photo.url));
+      photosRef.current = [];
+      setPhotos([]);
+    },
+  }));
 
   const copy = COPY[purpose];
   const full = photos.length >= maxShelves;
