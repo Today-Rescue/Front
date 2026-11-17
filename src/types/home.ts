@@ -30,7 +30,7 @@ export type ProductionRow = {
 
 export type FirstDisplay = {
   time: Clock; // 09:10
-  shelves: number; // 매대 수
+  shelves?: number; // 매대 수 (서버에서 모르면 없음)
   count: number; // 찍힌 개수
 };
 

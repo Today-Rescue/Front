@@ -2,6 +2,8 @@
 
 import { useHomeData } from "@/hooks/useHomeData";
 import { useOnboardingDraft } from "@/hooks/useOnboardingDraft";
+import { useSlowFlag } from "@/hooks/useSlowFlag";
+import { MOCK_HOME_EMPTY } from "@/lib/home";
 import { useNow } from "@/hooks/useNow";
 import { clockToMinutes, dateToMinutes } from "@/lib/time";
 import ClosingSection from "./ClosingSection";
@@ -28,9 +30,10 @@ export type HomeScreenOptions = {
  * 마감 알림 시각(마감 - N시간) 전이면 오전-1, 이후면 ① 마감 메인을 보여준다.
  */
 export default function HomeScreen(options: HomeScreenOptions) {
-  const { data, setData } = useHomeData({ empty: options.empty, useMockOnly: options.mockOnly });
+  const { data, setData, failed } = useHomeData({ empty: options.empty, useMockOnly: options.mockOnly });
   const now = useNow();
   const { draft } = useOnboardingDraft();
+  const slow = useSlowFlag(!data);
 
   // 0-5 첫날 메인: 온보딩에서 입력한 가게 정보로 보여줌
   if (options.first) {
@@ -43,8 +46,23 @@ export default function HomeScreen(options: HomeScreenOptions) {
             closeTime: draft.closeTime,
             notifyBeforeHours: draft.alertHours,
           }
-        : data.store;
-    return <FirstDayHome data={{ ...data, store }} />;
+        : (data ?? MOCK_HOME_EMPTY).store;
+    return <FirstDayHome data={{ ...(data ?? MOCK_HOME_EMPTY), store }} />;
+  }
+
+  // 서버에서 불러오는 중
+  if (!data) {
+    return (
+      <main className="px-5 pt-6" aria-busy>
+        <div className="h-8 w-40 animate-pulse rounded-lg bg-gray-100" />
+        <div className="mt-5 h-36 animate-pulse rounded-2xl bg-gray-100" />
+        <div className="mt-4 h-16 animate-pulse rounded-2xl bg-gray-100" />
+        <div className="mt-7 h-64 animate-pulse rounded-2xl bg-gray-100" />
+        {slow && (
+          <p className="mt-4 text-center text-caption text-gray-600">서버를 깨우는 중이에요. 처음엔 최대 1분 걸릴 수 있어요.</p>
+        )}
+      </main>
+    );
   }
 
   // 처음 그릴 때는 시각을 모르니 잠깐 비워 둔다 (서버/브라우저 시각 차이로 생기는 오류 방지)
@@ -57,6 +75,11 @@ export default function HomeScreen(options: HomeScreenOptions) {
   return (
     <main className="pb-8">
       <HomeHeader data={data} />
+      {failed && (
+        <p className="mx-5 mb-3 rounded-lg bg-gray-100 px-3 py-2 text-caption text-gray-600">
+          서버에 연결하지 못해 예시 데이터를 보여주고 있어요.
+        </p>
+      )}
       <ModeBanner mode={mode} store={data.store} nowMinutes={nowMinutes} />
       {mode === "morning" ? (
         <MorningSection data={data} />
@@ -65,7 +88,7 @@ export default function HomeScreen(options: HomeScreenOptions) {
           data={data}
           onAcceptBundle={() => {
             // TODO(C): POST /stores/{id}/campaigns/bundle 로 게시 (B와 요청 형식 맞추기)
-            setData((prev) => ({ ...prev, bundleOnSale: true }));
+            setData((prev) => (prev ? { ...prev, bundleOnSale: true } : prev));
           }}
         />
       )}
