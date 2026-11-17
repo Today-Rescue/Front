@@ -9,7 +9,8 @@ import { ROUTES } from "@/lib/routes";
 import { createDiscount, fetchDiscountItems } from "./api";
 import { MOCK_RECOMMENDED_RATE, MOCK_SALE_ITEMS } from "./mock";
 import SaleMethodTabs from "./SaleMethodTabs";
-import { DISCOUNT_RATES, type DiscountRate, type RiskLevel, type SaleItem } from "./types";
+import LevelBadge from "./LevelBadge";
+import { DISCOUNT_RATES, type DiscountRate, type SaleItem } from "./types";
 import { sortByLevel } from "./utils";
 
 const defaultSelection = (items: SaleItem[]) =>
@@ -186,22 +187,6 @@ function CheckBox({ checked }: { checked: boolean }) {
           <path d="M5 12l5 5L19 8" />
         </svg>
       )}
-    </span>
-  );
-}
-
-const BADGE: Record<Exclude<RiskLevel, "safe">, { label: string; className: string }> = {
-  risk: { label: "위험", className: "bg-error-300 text-white" },
-  caution: { label: "주의", className: "bg-primary-100 text-primary-600" },
-};
-
-/** 위험·주의 뱃지. 여유 품목과 스캔 전 품목은 표시하지 않음 */
-function LevelBadge({ level }: { level: RiskLevel | null }) {
-  if (level === null || level === "safe") return null;
-  const badge = BADGE[level];
-  return (
-    <span className={`shrink-0 rounded px-1.5 py-0.5 text-caption font-semibold ${badge.className}`}>
-      {badge.label}
     </span>
   );
 }

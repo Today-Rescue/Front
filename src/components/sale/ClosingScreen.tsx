@@ -8,10 +8,11 @@ import { BottomCta, CtaButton } from "@/components/common/CtaButton";
 import { useNow } from "@/hooks/useNow";
 import { API_BASE_URL } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
-import { fetchClosingRows, saveClosing } from "./api";
+import { fetchClosingRows, fetchRecommendation, saveClosing } from "./api";
 import { MOCK_CLOSING_ROWS } from "./mock";
-import type { ClosingChoice, ClosingRow } from "./types";
-import { formatDateLabel, parseLeftParam, toDateKey } from "./utils";
+import { SALE_PATHS } from "./paths";
+import type { ClosingChoice, ClosingRow, Recommendation } from "./types";
+import { formatDateLabel, parseLeftParam, toDateKey, withTopic } from "./utils";
 
 const defaultChoices = (rows: ClosingRow[]) =>
   Object.fromEntries(rows.map((r) => [r.itemId, r.defaultChoice])) as Record<number, ClosingChoice>;
@@ -54,11 +55,33 @@ export default function ClosingScreen({ date, left }: { date?: string; left?: st
     };
   }, [dateKey, leftOverride]);
 
+  // 내일 생산 추천 (이 날 마감이 이미 반영됐으면 달라지는 추천 수량을 보여줌)
+  const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
+  useEffect(() => {
+    if (!API_BASE_URL) return;
+    let cancelled = false;
+    fetchRecommendation()
+      .then((res) => !cancelled && setRecommendation(res))
+      .catch((err) => console.warn("[closing] 내일 추천 불러오기 실패", err));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const leftRows = rows.filter((r) => r.left !== null && r.left > 0);
   const disposedTotal = leftRows.filter((r) => choices[r.itemId] === "dispose").reduce((s, r) => s + (r.left ?? 0), 0);
   const carryoverTotal = leftRows.filter((r) => choices[r.itemId] === "carryover").reduce((s, r) => s + (r.left ?? 0), 0);
   const carryoverRows = leftRows.filter((r) => choices[r.itemId] === "carryover");
   const hasUnknown = rows.some((r) => r.left === null);
+
+  // 이 날 마감 기록을 반영한 추천이면, 남은 빵 중 추천 수량이 가장 크게 바뀌는 품목 하나를 보여줌
+  const leftIds = new Set(leftRows.map((r) => r.itemId));
+  const biggestChange =
+    recommendation && recommendation.base_date === dateKey
+      ? recommendation.items
+          .filter((i) => leftIds.has(i.item_id) && i.change !== 0)
+          .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))[0]
+      : undefined;
 
   const submit = async () => {
     if (!dateKey) return;
@@ -89,6 +112,8 @@ export default function ClosingScreen({ date, left }: { date?: string; left?: st
     <main>
       <HeaderBar
         title={isToday ? "오늘 마감 기록" : "마감 기록 수정"}
+        // 오늘 마감 흐름이면 ④-1로, ⑥에서 다른 날 기록을 고치러 왔으면 이전 화면으로
+        backHref={date ? undefined : SALE_PATHS.remainingCheck}
         right={dateKey && <span className="text-caption font-medium text-gray-600">{formatDateLabel(dateKey, false)}</span>}
       />
 
@@ -165,7 +190,18 @@ export default function ClosingScreen({ date, left }: { date?: string; left?: st
           <p className="mt-2 text-body-md text-gray-800">
             폐기는 &lsquo;안 팔린 수량&rsquo;으로, 내일 판매분은 &lsquo;이월 재고&rsquo;로 계산해요.
             {carryoverRows.length > 0 &&
-              ` ${carryoverRows.map((r) => `${r.name} ${r.left}개`).join(", ")}는 내일 추천 수량에서 빼고 계산할게요.`}
+              ` ${carryoverRows.map((r) => `${r.name} ${r.left}개`).join(", ")}는 내일 추천 수량에서 빼고 계산할게요.`}{" "}
+            {biggestChange ? (
+              <>
+                {withTopic(biggestChange.name)} 내일{" "}
+                <b className="font-bold">
+                  {biggestChange.today_made}개 → {biggestChange.recommended}개
+                </b>
+                로 {biggestChange.change < 0 ? "줄여" : "늘려"} 추천할게요.
+              </>
+            ) : (
+              "저장하면 내일 추천 수량이 다시 계산돼요."
+            )}
           </p>
           <Link href={ROUTES.recommend} className="mt-2 inline-block text-label-md font-semibold text-primary-600 underline">
             내일 추천 전체 보기
