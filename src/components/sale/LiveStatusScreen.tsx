@@ -75,6 +75,7 @@ export default function LiveStatusScreen() {
 
   // 다음 한 수: 가장 안 팔린 품목 하나로 할인율 올리기 제안
   // TODO(B): campaigns/live 의 '느린 품목과 할인율 올리기 제안'을 받으면 그 값으로 바꾸기
+  // TODO(B): 화면 설명은 '해당 품목' 할인율 변경인데, PATCH /campaigns/{id} 는 세일 전체 할인율만 바꿀 수 있음 (백엔드 확인)
   const slowest = items.filter(isSlow).sort((a, b) => soldOf(a) / a.startQty - soldOf(b) / b.startQty)[0];
   const nextRate = discount ? Math.min(MAX_RATE, discount.rate + 20) : null;
   const suggestion = slowest && discount && nextRate && nextRate > discount.rate ? { item: slowest, rate: nextRate } : null;
@@ -100,6 +101,7 @@ export default function LiveStatusScreen() {
     <main>
       <HeaderBar
         title="마감 세일 현황"
+        backHref={ROUTES.home}
         right={
           <span className="flex items-center gap-1.5 text-label-md font-semibold text-primary-600">
             <span aria-hidden className="size-2 rounded-full bg-primary-500" />
@@ -176,7 +178,7 @@ export default function LiveStatusScreen() {
                     )}
                   </span>
                   {isSlow(item) && (
-                    <span className="rounded bg-error-300 px-1.5 py-0.5 text-caption font-semibold text-white">
+                    <span className="rounded bg-primary-500 px-1.5 py-0.5 text-caption font-semibold text-white">
                       거의 안 팔림
                     </span>
                   )}

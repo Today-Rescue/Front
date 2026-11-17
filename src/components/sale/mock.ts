@@ -29,7 +29,7 @@ export const MOCK_SALE_ITEMS: SaleItem[] = [
 
 /**
  * ③-b 추천 세트 mock
- * TODO(B): POST /bundles/recommend 응답으로 바꾸기 (오늘 재고 스캔 전이면 서버가 400을 줘서 응답 모양 미확인)
+ * 오늘 재고 스캔 전에는 POST /bundles/recommend 가 400이라 이 값을 보여줌. 가격은 계산 결과의 추천가 사용
  */
 export const MOCK_BUNDLE_RECOMMENDATIONS: BundleRecommendation[] = [
   {
@@ -78,14 +78,14 @@ export const MOCK_REMAINING: RemainingRow[] = [
   { itemId: 14, name: "올리브 치아바타", scanQty: 20, estimatedQty: 2, recordedSold: 0 },
 ];
 
-/** ⑤ 오늘 마감 기록 mock (보관 기간: 소금빵~소보로빵 당일, 식빵·바게트 1일, 올리브 치아바타 2일) */
+/** ⑤ 오늘 마감 기록 mock (보관 기간: 소금빵~소보로빵 당일, 식빵·바게트 1일 → 폐기, 올리브 치아바타 2일 → 내일 판매) */
 export const MOCK_CLOSING_ROWS: ClosingRow[] = [
   { itemId: 8, name: "소금빵", made: 40, left: 5, defaultChoice: "dispose" },
   { itemId: 9, name: "크루아상", made: 30, left: 2, defaultChoice: "dispose" },
   { itemId: 10, name: "앙버터", made: 28, left: 6, defaultChoice: "dispose" },
   { itemId: 11, name: "소보로빵", made: 10, left: 0, defaultChoice: "dispose" },
-  { itemId: 12, name: "식빵", made: 36, left: 4, defaultChoice: "carryover" },
-  { itemId: 13, name: "바게트", made: 30, left: 3, defaultChoice: "carryover" },
+  { itemId: 12, name: "식빵", made: 36, left: 4, defaultChoice: "dispose" },
+  { itemId: 13, name: "바게트", made: 30, left: 3, defaultChoice: "dispose" },
   { itemId: 14, name: "올리브 치아바타", made: 24, left: 2, defaultChoice: "carryover" },
 ];
 

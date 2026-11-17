@@ -107,7 +107,7 @@ export default function RecordsScreen({ date }: { date?: string }) {
       </header>
 
       {/* 날짜 칩 */}
-      <nav aria-label="날짜 선택" className="flex gap-2 overflow-x-auto px-5 pb-1">
+      <nav aria-label="날짜 선택" className="mx-5 flex gap-2 overflow-x-auto pb-1">
         {days.map((d) => {
           const active = d === selected;
           const hasRecord = recordDays.has(d) || d === today;
@@ -119,7 +119,9 @@ export default function RecordsScreen({ date }: { date?: string }) {
               aria-pressed={active}
               disabled={!hasRecord}
               onClick={() => setPicked(d)}
-              className={`flex h-16 w-12 shrink-0 flex-col items-center justify-center rounded-xl transition-colors disabled:opacity-40 ${
+              // 한 화면에 7개(일주일)가 보이도록: (가로 - 칩 사이 간격 6개) / 7
+              style={{ width: "calc((100% - 48px) / 7)" }}
+              className={`flex h-16 shrink-0 flex-col items-center justify-center rounded-xl transition-colors disabled:opacity-40 ${
                 active ? "bg-primary-500 text-white" : "bg-gray-100 text-black active:bg-gray-200"
               }`}
             >
@@ -192,7 +194,9 @@ export default function RecordsScreen({ date }: { date?: string }) {
                     <td className="py-3 text-right text-gray-700">{item.made}</td>
                     <td className="py-3 text-right text-gray-700">{item.regular_sold ?? "–"}</td>
                     <td className="py-3 text-right font-semibold text-primary-600">{item.discount_sold}</td>
-                    <td className="py-3 text-right font-semibold">{leftLabel(item)}</td>
+                    <td className={`py-3 text-right font-semibold ${item.disposed ? "text-error-300" : ""}`}>
+                      {leftLabel(item)}
+                    </td>
                   </tr>
                 ))}
               </tbody>

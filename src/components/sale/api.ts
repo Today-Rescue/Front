@@ -51,9 +51,9 @@ export async function fetchDiscountItems(rate: DiscountRate): Promise<SaleItem[]
   return res.map(toSaleItem);
 }
 
+/** 201로 만든 세일 객체를 돌려줌. id로 판매 확정·할인율 변경·중지를 부름 */
 export function createDiscount(body: DiscountCreateBody) {
-  // TODO(B): 응답 모양 확인 후 타입 지정 (생성된 campaign id를 ④에서 쓸 수 있음)
-  return api.post<unknown>(storePath("/campaigns/discount"), body);
+  return api.post<CampaignApi>(storePath("/campaigns/discount"), body);
 }
 
 /* ------------------------------------------------------------------ */
@@ -143,30 +143,25 @@ export async function calculateBundle(parts: BundleCalcInput[]): Promise<BundleC
   };
 }
 
+/** POST /stores/{id}/bundles/recommend 응답의 추천 세트 하나 (계산 결과 모양 + name) */
+type BundleRecommendApi = BundleCalcCoreApi & { name: string };
+
 /**
- * 추천 세트 최대 3개.
- * TODO(B): 응답 모양 확인 후 정리. 오늘 재고 스캔 전에는 400(BUNDLE_NOT_POSSIBLE / STOCK_UNKNOWN)이라
- * 아직 성공 응답을 받아 보지 못해서, 배열이든 { bundles: [...] }든 받을 수 있게 해 둠
+ * 추천 세트.
+ * - body {} → 재고 많은 품목 위주로 최대 3개
+ * - body { item_ids } → 그 품목들로 1개
+ * 오늘 재고 스캔 전에는 400 (BUNDLE_NOT_POSSIBLE / STOCK_UNKNOWN)
  */
 export async function recommendBundles(itemIds?: number[]): Promise<BundleRecommendation[]> {
-  const res = await api.post<unknown>(storePath("/bundles/recommend"), itemIds ? { item_ids: itemIds } : {});
-  const obj = res as Record<string, unknown> | null;
-  const list = Array.isArray(res) ? res : (obj?.bundles ?? obj?.recommendations ?? []);
-  if (!Array.isArray(list)) return [];
-
-  return list.map((raw, i) => {
-    const b = raw as {
-      name?: string;
-      price?: number;
-      recommended_price?: number;
-      items?: { item_id: number; per_pack: number }[];
-    };
-    return {
-      name: b.name ?? `추천 세트 ${i + 1}`,
-      parts: (b.items ?? []).map((it) => ({ itemId: it.item_id, perPack: it.per_pack })),
-      price: b.price ?? b.recommended_price ?? null,
-    };
-  });
+  const res = await api.post<BundleRecommendApi[]>(
+    storePath("/bundles/recommend"),
+    itemIds ? { item_ids: itemIds } : {},
+  );
+  return res.map((b) => ({
+    name: b.name,
+    parts: b.items.map((it) => ({ itemId: it.item_id, perPack: it.per_pack })),
+    price: b.recommended_price,
+  }));
 }
 
 /** POST /stores/{id}/campaigns/bundle 요청 body */
@@ -177,9 +172,9 @@ export type BundleCreateBody = {
   ends_at?: string; // 생략하면 오늘 마감 시각
 };
 
+/** 고른 추천의 name, 가격(추천가 또는 사장님이 고친 값), items의 item_id·per_pack을 보냄. 201로 세일 객체를 돌려줌 */
 export function createBundle(body: BundleCreateBody) {
-  // TODO(B): 응답 모양 확인 후 타입 지정 (생성된 campaign id를 ④에서 쓸 수 있음)
-  return api.post<unknown>(storePath("/campaigns/bundle"), body);
+  return api.post<CampaignApi>(storePath("/campaigns/bundle"), body);
 }
 
 /**
@@ -209,7 +204,7 @@ export type CampaignApi = {
   id: number;
   type: "discount" | "bundle";
   bundle: { name?: string; packs?: number; total_packs?: number } | null; // TODO(B): 세트 세일 응답 모양 확인
-  status: string; // 확인된 값: "ended". 진행 중 값은 아직 못 받아 봄
+  status: "active" | "stopped" | "ended";
   discount_rate: number | null;
   channel: SaleChannel;
   started_at: string;
@@ -233,7 +228,7 @@ export type CampaignSaleApi = {
   sold_at: string;
 };
 
-const isActive = (c: CampaignApi) => c.status !== "ended" && c.status !== "stopped";
+const isActive = (c: CampaignApi) => c.status === "active";
 
 /** 오늘 세일 중 진행 중인 것 (없으면 가장 최근 것) */
 async function fetchTodayCampaigns() {
@@ -361,10 +356,16 @@ type ClosingResultApi = {
   carryover_total: number;
 };
 
+/** 보관 기간이 2일 이상인지. shelf_life 값: today, day1, day2 (그 이상은 dayN 으로 온다고 가정) */
+const keepsTwoDaysOrMore = (shelfLife?: string) => {
+  const days = Number(shelfLife?.match(/^day(\d+)$/)?.[1] ?? 0);
+  return days >= 2;
+};
+
 /**
  * ⑤ 마감 기록 화면에 보여줄 품목들.
  * 남은 수량 우선순위: ④-1에서 넘겨받은 값 → 이미 저장된 마감 기록 → 일일 기록
- * 처음 골라 둘 처리 방법: 이미 마감했으면 저장된 값, 아니면 보관 기간(당일 → 폐기, 1~2일 → 내일 판매)
+ * 처음 골라 둘 처리 방법: 이미 마감했으면 저장된 값, 아니면 보관 기간(당일·하루 → 폐기, 2일 이상 → 내일 판매)
  */
 export async function fetchClosingRows(date: string, leftOverride: Record<number, number>) {
   const [items, records, closing] = await Promise.all([
@@ -382,9 +383,9 @@ export async function fetchClosingRows(date: string, leftOverride: Record<number
       ? saved.carryover_qty > 0
         ? "carryover"
         : "dispose"
-      : shelfLife.get(r.item_id) === "today"
-        ? "dispose"
-        : "carryover";
+      : keepsTwoDaysOrMore(shelfLife.get(r.item_id))
+        ? "carryover"
+        : "dispose";
     return { itemId: r.item_id, name: r.name, made: r.made_qty, left, defaultChoice };
   });
   return { rows, isClosed: closing.is_closed };

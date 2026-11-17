@@ -91,6 +91,7 @@ export default function RemainingCheckScreen() {
     <main>
       <HeaderBar
         title="마감 남은 빵 확인"
+        backHref={SALE_PATHS.status}
         right={now && <span className="text-caption font-medium text-gray-600">{minutesToClock(dateToMinutes(now))}</span>}
       />
 

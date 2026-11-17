@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "@/lib/api";
-import { fetchRecommendation, fetchStoreDong } from "./api";
+import { fetchRecommendation, fetchSalesRecord, fetchStoreDong } from "./api";
 import { MOCK_RECOMMENDATION } from "./mock";
 import type { Recommendation } from "./types";
 import { formatDateLabel } from "./utils";
@@ -27,15 +27,19 @@ export default function RecommendScreen() {
   const [rec, setRec] = useState<Recommendation>(MOCK_RECOMMENDATION);
   const [dong, setDong] = useState("서교동");
   const [isExample, setIsExample] = useState(true);
+  const [baseClosed, setBaseClosed] = useState(true);
 
   useEffect(() => {
     if (!API_BASE_URL) return;
     let cancelled = false;
     fetchRecommendation()
-      .then((res) => {
+      .then(async (res) => {
         if (cancelled) return;
         setRec(res);
         setIsExample(false);
+        // 기준일(보통 오늘) 마감 기록이 저장됐는지 → 제목 아래 '마감 기록 반영' 여부
+        const day = await fetchSalesRecord(res.base_date);
+        if (!cancelled) setBaseClosed(day.is_closed);
       })
       .catch((err) => console.warn("[recommend] 내일 생산 추천 불러오기 실패, mock 데이터로 보여줘요", err));
     fetchStoreDong()
@@ -53,7 +57,8 @@ export default function RecommendScreen() {
       <header className="px-5 pt-6 pb-4">
         <h1 className="text-heading-lg font-bold">내일 생산 추천</h1>
         <p className="mt-0.5 text-body-md text-gray-700">
-          {formatDateLabel(rec.date)} · {dong} · {formatDateLabel(rec.base_date, false)} 마감 기록 반영
+          {formatDateLabel(rec.date)} · {dong} · {formatDateLabel(rec.base_date, false)} 마감 기록{" "}
+          {baseClosed ? "반영" : <span className="text-primary-600">반영 전</span>}
         </p>
       </header>
 

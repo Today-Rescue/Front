@@ -55,3 +55,10 @@ export const parseLeftParam = (value?: string): Record<number, number> =>
       .map((pair) => pair.split(":").map(Number))
       .filter(([id, qty]) => Number.isInteger(id) && Number.isInteger(qty) && qty >= 0),
   );
+
+/** 받침 있으면 '은', 없으면 '는'. 예: '소금빵은', '바게트는' */
+export const withTopic = (word: string) => {
+  const code = word.charCodeAt(word.length - 1) - 0xac00;
+  const hasBatchim = code >= 0 && code <= 11171 && code % 28 !== 0;
+  return `${word}${hasBatchim ? "은" : "는"}`;
+};
