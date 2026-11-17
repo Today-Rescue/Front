@@ -8,3 +8,10 @@ export type ProductionItem = {
   /** 지금까지 오늘 만든 수량 */
   madeToday: number;
 };
+
+/** 촬영(또는 갤러리에서 고른) 매대 사진 한 장. url은 화면 미리보기용 */
+export type ShotPhoto = {
+  id: string;
+  blob: Blob;
+  url: string;
+};
