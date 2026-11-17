@@ -15,8 +15,10 @@ export type ScanResultItem = {
   level: StockLevel;
   /** 보조 메모 (예: '오늘 소비기한', '냉장 보관 중') */
   memo?: string;
-  /** 사진에서 일부 가려진 품목. '개수 확인 필요' 뱃지 */
+  /** 사진에서 일부 가려지거나 못 찾은 품목. '개수 확인 필요' 뱃지 */
   needsCheck?: boolean;
+  /** 사진에서 못 찾은 품목. 목록 맨 위에 수량 0으로 보여줌 */
+  notFound?: boolean;
   quantity: number;
   /** 품목 사진. 없으면 회색 자리 표시 */
   imageUrl?: string;
@@ -28,13 +30,19 @@ type ScanResultScreenProps = {
   /** 사진 위 라벨 (예: '매대 사진 · 오후 6:02') */
   photoLabel: string;
   photoUrl?: string;
+  /** 수량은 부모가 들고 있음 (고치면 서버에서 위험도를 다시 계산해서 새 목록을 내려줌) */
   items: ScanResultItem[];
+  onChangeQuantity: (id: number, quantity: number) => void;
   /** < 클릭. ①로 돌아가도록 부모가 처리 */
   onBack: () => void;
   /** '다시 찍기' 클릭. ①-1로 이동 */
   onRetake: () => void;
-  /** 판매 방법을 골랐을 때. 확정한 수량을 넘김. 이후 ③-a / ③-b 이동은 부모가 처리 */
-  onConfirm: (method: SellMethod, items: ScanResultItem[]) => void;
+  /** 판매 방법을 골랐을 때. 수량 확정과 ③-a / ③-b 이동은 부모가 처리 */
+  onConfirm: (method: SellMethod) => void;
+  /** 확정 요청 중이면 true (버튼 잠금) */
+  confirming?: boolean;
+  /** 확정 실패 문구 (하단 안내 자리에 빨간 글씨로) */
+  error?: string;
 };
 
 const LEVEL_ORDER: StockLevel[] = ["danger", "caution", "ok"];
@@ -51,15 +59,21 @@ const BADGE_STYLE: Record<Exclude<StockLevel, "ok">, string> = {
 };
 
 /** ② 스캔 결과 확인 */
-export default function ScanResultScreen({ photoLabel, photoUrl, items, onBack, onRetake, onConfirm }: ScanResultScreenProps) {
-  // 위험 → 주의 → 여유 순으로 정렬 (같은 단계는 들어온 순서 그대로)
-  const [rows, setRows] = useState(() =>
-    [...items].sort((a, b) => LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level)),
-  );
+export default function ScanResultScreen({
+  photoLabel,
+  photoUrl,
+  items,
+  onChangeQuantity,
+  onBack,
+  onRetake,
+  onConfirm,
+  confirming = false,
+  error,
+}: ScanResultScreenProps) {
+  // 못 찾은 품목 맨 위 → 위험 → 주의 → 여유 순 (같은 단계는 들어온 순서 그대로)
+  const rank = (row: ScanResultItem) => (row.notFound ? -1 : LEVEL_ORDER.indexOf(row.level));
+  const rows = [...items].sort((a, b) => rank(a) - rank(b));
   const total = rows.reduce((sum, row) => sum + row.quantity, 0);
-
-  const setQuantity = (id: number, quantity: number) =>
-    setRows((prev) => prev.map((row) => (row.id === id ? { ...row, quantity } : row)));
 
   return (
     <>
@@ -74,7 +88,7 @@ export default function ScanResultScreen({ photoLabel, photoUrl, items, onBack, 
         {/* 위험 · 주의 · 여유 요약 */}
         <div className="mt-4 grid grid-cols-3 gap-2">
           {LEVEL_ORDER.map((level) => {
-            const group = rows.filter((row) => row.level === level);
+            const group = rows.filter((row) => !row.notFound && row.level === level);
             const count = group.reduce((sum, row) => sum + row.quantity, 0);
             const style = SUMMARY_STYLE[level];
             return (
@@ -118,19 +132,19 @@ export default function ScanResultScreen({ photoLabel, photoUrl, items, onBack, 
                 </div>
               </div>
 
-              <Stepper size="sm" value={row.quantity} onChange={(next) => setQuantity(row.id, next)} label={`${row.name} 수량`} />
+              <Stepper size="sm" value={row.quantity} onChange={(next) => onChangeQuantity(row.id, next)} label={`${row.name} 수량`} />
             </li>
           ))}
         </ul>
       </main>
 
-      <SellMethodBar onSelect={(method) => onConfirm(method, rows)} />
+      <SellMethodBar disabled={confirming} error={error} onSelect={onConfirm} />
     </>
   );
 }
 
 /** 하단 고정: 수량 확정 후 판매 방법 선택 (일괄 할인 / 세트 구성) */
-function SellMethodBar({ onSelect }: { onSelect: (method: SellMethod) => void }) {
+function SellMethodBar({ onSelect, disabled, error }: { onSelect: (method: SellMethod) => void; disabled: boolean; error?: string }) {
   const barRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(170);
 
@@ -157,7 +171,8 @@ function SellMethodBar({ onSelect }: { onSelect: (method: SellMethod) => void })
           <button
             type="button"
             onClick={() => onSelect("discount")}
-            className="flex-1 rounded-[20px] bg-primary-500 px-2 py-4 text-center text-white transition-colors active:bg-primary-600"
+            disabled={disabled}
+            className="flex-1 rounded-[20px] bg-primary-500 px-2 py-4 text-center text-white transition-colors active:bg-primary-600 disabled:opacity-60"
           >
             <span className="flex items-center justify-center gap-1.5 text-title-lg font-bold">
               {/* 아이콘 자리: 디자인에서 아이콘이 나오면 교체 */}
@@ -170,7 +185,8 @@ function SellMethodBar({ onSelect }: { onSelect: (method: SellMethod) => void })
           <button
             type="button"
             onClick={() => onSelect("bundle")}
-            className="flex-1 rounded-[20px] bg-primary-100 px-2 py-4 text-center text-primary-700 transition-colors active:bg-primary-200"
+            disabled={disabled}
+            className="flex-1 rounded-[20px] bg-primary-100 px-2 py-4 text-center text-primary-700 transition-colors active:bg-primary-200 disabled:opacity-60"
           >
             <span className="flex items-center justify-center gap-1.5 text-title-lg font-bold">
               <span aria-hidden className="size-5 rounded-md bg-primary-700/20" />
@@ -180,7 +196,9 @@ function SellMethodBar({ onSelect }: { onSelect: (method: SellMethod) => void })
           </button>
         </div>
 
-        <p className="mt-3 text-center text-caption text-gray-700">확정한 수량은 오늘 마감 기록에 자동으로 들어가요</p>
+        <p className={`mt-3 text-center text-caption ${error ? "text-error-300" : "text-gray-700"}`}>
+          {error ?? "확정한 수량은 오늘 마감 기록에 자동으로 들어가요"}
+        </p>
       </div>
     </>
   );

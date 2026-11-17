@@ -9,8 +9,8 @@ import Stepper from "./Stepper";
 export type OpenConfirmItem = {
   id: number;
   name: string;
-  /** 비교용 어제 만든 수량 */
-  yesterday: number;
+  /** 비교용 어제 만든 수량. 서버가 주지 않으면 생략 */
+  yesterday?: number;
   /** 사진에서 찾은(또는 고친) 오늘 수량 */
   quantity: number;
 };
@@ -26,10 +26,14 @@ type OpenConfirmScreenProps = {
   onRetake: () => void;
   /** 저장 버튼. 고친 수량을 넘김. 저장 후 메인으로 이동은 부모가 처리 */
   onSave: (items: OpenConfirmItem[]) => void;
+  /** 저장 요청 중이면 true (버튼 잠금) */
+  saving?: boolean;
+  /** 저장 실패 문구 (버튼 아래에 빨간 글씨로) */
+  error?: string;
 };
 
 /** 오전-4 최초 진열 확인 (만든 수량) */
-export default function OpenConfirmScreen({ photoLabel, photoUrl, items, onBack, onRetake, onSave }: OpenConfirmScreenProps) {
+export default function OpenConfirmScreen({ photoLabel, photoUrl, items, onBack, onRetake, onSave, saving = false, error }: OpenConfirmScreenProps) {
   const [rows, setRows] = useState(items);
   const total = rows.reduce((sum, row) => sum + row.quantity, 0);
 
@@ -51,7 +55,7 @@ export default function OpenConfirmScreen({ photoLabel, photoUrl, items, onBack,
             <li key={row.id} className="flex items-center justify-between rounded-2xl bg-gray-100 py-2.5 pr-2.5 pl-3.5">
               <div className="min-w-0">
                 <p className="truncate text-title-sm font-bold">{row.name}</p>
-                <p className="text-caption text-gray-700">어제 {row.yesterday}개</p>
+                {row.yesterday !== undefined && <p className="text-caption text-gray-700">어제 {row.yesterday}개</p>}
               </div>
               <Stepper value={row.quantity} onChange={(next) => setQuantity(row.id, next)} label={`${row.name} 수량`} />
             </li>
@@ -59,8 +63,8 @@ export default function OpenConfirmScreen({ photoLabel, photoUrl, items, onBack,
         </ul>
       </main>
 
-      <BottomCta note="오후에 더 구운 빵은 메인의 [추가 생산]으로 더하면 돼요">
-        <CtaButton onClick={() => onSave(rows)}>만든 수량 {total}개 저장</CtaButton>
+      <BottomCta note={error ? <span className="text-error-300">{error}</span> : "오후에 더 구운 빵은 메인의 [추가 생산]으로 더하면 돼요"}>
+        <CtaButton disabled={saving} onClick={() => onSave(rows)}>만든 수량 {total}개 저장</CtaButton>
       </BottomCta>
     </>
   );
