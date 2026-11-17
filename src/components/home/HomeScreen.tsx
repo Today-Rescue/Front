@@ -1,9 +1,11 @@
 "use client";
 
 import { useHomeData } from "@/hooks/useHomeData";
+import { useOnboardingDraft } from "@/hooks/useOnboardingDraft";
 import { useNow } from "@/hooks/useNow";
 import { clockToMinutes, dateToMinutes } from "@/lib/time";
 import ClosingSection from "./ClosingSection";
+import FirstDayHome from "./FirstDayHome";
 import HomeHeader from "./HomeHeader";
 import MorningSection from "./MorningSection";
 import ModeBanner, { type HomeMode } from "./ModeBanner";
@@ -17,6 +19,8 @@ export type HomeScreenOptions = {
   empty?: boolean;
   /** 테스트용: 서버 안 부르고 mock만 (?mock=1) */
   mockOnly?: boolean;
+  /** 온보딩을 막 끝낸 첫날 화면 0-5 (?first=1) */
+  first?: boolean;
 };
 
 /**
@@ -26,6 +30,22 @@ export type HomeScreenOptions = {
 export default function HomeScreen(options: HomeScreenOptions) {
   const { data, setData } = useHomeData({ empty: options.empty, useMockOnly: options.mockOnly });
   const now = useNow();
+  const { draft } = useOnboardingDraft();
+
+  // 0-5 첫날 메인: 온보딩에서 입력한 가게 정보로 보여줌
+  if (options.first) {
+    const store =
+      draft.name && draft.place
+        ? {
+            name: draft.name,
+            dong: draft.place.dong,
+            openTime: draft.openTime,
+            closeTime: draft.closeTime,
+            notifyBeforeHours: draft.alertHours,
+          }
+        : data.store;
+    return <FirstDayHome data={{ ...data, store }} />;
+  }
 
   // 처음 그릴 때는 시각을 모르니 잠깐 비워 둔다 (서버/브라우저 시각 차이로 생기는 오류 방지)
   if (!now && !options.now) return <div className="min-h-dvh" />;

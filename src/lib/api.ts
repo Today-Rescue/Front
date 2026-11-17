@@ -31,7 +31,7 @@ export class ApiError extends Error {
     public status: number,
     public body: unknown,
   ) {
-    super(`API ${status} 에러`);
+    super(`API ${status} 에러: ${typeof body === "string" ? body : JSON.stringify(body)}`);
     this.name = "ApiError";
   }
 }

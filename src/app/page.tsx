@@ -10,6 +10,7 @@ import HomeScreen from "@/components/home/HomeScreen";
  *   /?now=18:30                 지금 시각을 18:30으로 가정 (모드 자동 전환 확인)
  *   /?data=empty                기록이 하나도 없는 첫날 상태
  *   /?mock=1                    서버 안 부르고 mock 데이터만
+ *   /?first=1                   0-5 첫날 메인 (온보딩 끝나면 자동으로 이 주소로 옴)
  *   (같이 쓰기: /?mode=closing&data=empty)
  *
  * 이 프로젝트는 cacheComponents 설정이 켜져 있어서,
@@ -34,6 +35,7 @@ async function HomeWithParams({ searchParams }: Pick<PageProps<"/">, "searchPara
       now={pick("now")}
       empty={pick("data") === "empty"}
       mockOnly={pick("mock") === "1"}
+      first={pick("first") === "1"}
     />
   );
 }
