@@ -1,4 +1,6 @@
-import type { HomeData } from "@/types/home";
+import type { LiveStatus, BundleRecommendation } from "@/components/sale/types";
+import type { ScanApiResponse } from "./scan";
+import type { BundleSuggestion, HomeData, ScanSummary } from "@/types/home";
 import { api, storePath, STORE_ID } from "./api";
 
 /* ------------------------------------------------------------------ */
@@ -242,3 +244,81 @@ export function buildHomeData(params: {
 export const fetchStore = () => api.get<StoreApiResponse>(`/stores/${STORE_ID}`);
 export const fetchStoreItems = () => api.get<ItemApiResponse[]>(storePath("/items"));
 export const fetchProductions = () => api.get<ProductionsApiResponse>(storePath("/productions"));
+
+/* ------------------------------------------------------------------ */
+/* 5. ① 마감 모드: 마지막 스캔 · 진행 중인 세일 · 세트                       */
+/*    (API 함수는 A의 lib/scan.ts, B의 components/sale/api.ts 것을 그대로 씀) */
+/* ------------------------------------------------------------------ */
+
+export type ClosingSources = {
+  live: LiveStatus | null; // GET /stores/{id}/campaigns/live
+  scan: ScanApiResponse | null; // GET /scans/{last_scan.scan_id} (위험·주의 품목 수)
+  recommendation: BundleRecommendation | null; // POST /bundles/recommend 첫 번째
+  items: ItemApiResponse[];
+  madeTotal: number;
+};
+
+/** 마지막 스캔 수량 - 그 뒤 세일에서 기록된 판매 (백엔드 안내 기준) */
+function remainingAfterSales(live: LiveStatus) {
+  const scan = live.last_scan!;
+  const sold = new Map<number, number>();
+  for (const it of live.discount?.items ?? []) sold.set(it.item_id, (sold.get(it.item_id) ?? 0) + it.sold_qty);
+  for (const part of live.bundle?.composition ?? []) {
+    sold.set(part.item_id, (sold.get(part.item_id) ?? 0) + part.per_pack * live.bundle!.sold_packs);
+  }
+  return scan.items.reduce((sum, it) => sum + Math.max(0, it.quantity - (sold.get(it.item_id) ?? 0)), 0);
+}
+
+export function buildClosing({ live, scan, recommendation, items, madeTotal }: ClosingSources): Pick<
+  HomeData,
+  "lastScan" | "saleLive" | "bundle" | "bundleOnSale"
+> {
+  const lastScan: ScanSummary | null = live?.last_scan
+    ? {
+        time: toClock(live.last_scan.scanned_at) ?? "",
+        madeTotal,
+        remaining: remainingAfterSales(live),
+        riskKinds: scan?.risk_summary.danger.item_count ?? 0,
+        cautionKinds: scan?.risk_summary.caution.item_count ?? 0,
+        recommendedDiscount: live.discount?.discount_rate ?? 30,
+      }
+    : null;
+
+  const itemNames = new Map(items.map((it) => [it.id, it.name]));
+  const itemPrices = new Map(items.map((it) => [it.id, it.price]));
+  let bundle: BundleSuggestion | null = null;
+  if (live?.bundle) {
+    // 이미 올린 세트
+    bundle = {
+      name: live.bundle.name,
+      price: live.bundle.price,
+      packs: live.bundle.packs,
+      items: live.bundle.composition.map((c) => ({ name: c.name, qty: c.per_pack * live.bundle!.packs })),
+    };
+  } else if (recommendation && live?.last_scan) {
+    // 추천 세트: 마지막 스캔 수량으로 몇 팩 나오는지 계산
+    const qty = new Map(live.last_scan.items.map((it) => [it.item_id, it.quantity]));
+    const packs = Math.min(...recommendation.parts.map((p) => Math.floor((qty.get(p.itemId) ?? 0) / p.perPack)));
+    if (packs > 0) {
+      bundle = {
+        name: recommendation.name,
+        // 추천가가 없으면 정가 합계의 60%를 100원 단위로 내림 (B 화면과 같은 계산)
+        price:
+          recommendation.price ??
+          Math.floor(
+            (recommendation.parts.reduce((sum, p) => sum + (itemPrices.get(p.itemId) ?? 0) * p.perPack, 0) * 0.6) / 100,
+          ) * 100,
+        packs,
+        items: recommendation.parts.map((p) => ({ name: itemNames.get(p.itemId) ?? "품목", qty: p.perPack * packs })),
+        parts: recommendation.parts,
+      };
+    }
+  }
+
+  return {
+    lastScan,
+    saleLive: live?.discount?.status === "active",
+    bundle,
+    bundleOnSale: live?.bundle?.status === "active",
+  };
+}

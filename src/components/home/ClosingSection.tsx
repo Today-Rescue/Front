@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { createDiscount } from "@/components/sale/api";
 import { ROUTES } from "@/lib/routes";
 import { formatAmPm, formatNumber } from "@/lib/time";
 import type { HomeData } from "@/types/home";
@@ -12,14 +14,38 @@ export default function ClosingSection({
   onAcceptBundle,
 }: {
   data: HomeData;
-  onAcceptBundle: () => void;
+  onAcceptBundle: () => Promise<void>;
 }) {
   const router = useRouter();
   const { lastScan, saleLive, bundle, bundleOnSale } = data;
+  const [busy, setBusy] = useState<"sale" | "bundle" | null>(null);
+  const [error, setError] = useState("");
 
-  const startBulkSale = () => {
-    // TODO(C): 추천값 그대로 마켓에 게시 → POST /stores/{id}/campaigns/discount (B와 요청 형식 맞추기)
-    router.push(ROUTES.saleStatus);
+  /** 추천값 그대로(30%, 위험·주의 품목) 마켓에 올리고 ④ 세일 현황으로 */
+  const startBulkSale = async () => {
+    setBusy("sale");
+    setError("");
+    try {
+      await createDiscount({ discount_rate: lastScan?.recommendedDiscount });
+      router.push(ROUTES.saleStatus);
+    } catch (err) {
+      console.error(err);
+      setError("세일을 올리지 못했어요. 잠시 후 다시 눌러 주세요.");
+      setBusy(null);
+    }
+  };
+
+  const acceptBundle = async () => {
+    setBusy("bundle");
+    setError("");
+    try {
+      await onAcceptBundle();
+    } catch (err) {
+      console.error(err);
+      setError("세트를 올리지 못했어요. 잠시 후 다시 눌러 주세요.");
+    } finally {
+      setBusy(null);
+    }
   };
 
   return (
@@ -35,7 +61,7 @@ export default function ClosingSection({
         </Link>
         <p className="mt-2 text-center text-caption text-gray-600">
           {lastScan
-            ? `마지막 스캔 ${formatAmPm(lastScan.time)} · 매대 ${lastScan.shelves}곳 인식`
+            ? `마지막 스캔 ${formatAmPm(lastScan.time)}${lastScan.shelves ? ` · 매대 ${lastScan.shelves}곳 인식` : ""}`
             : "아직 마감 스캔 기록이 없어요"}
         </p>
       </div>
@@ -75,9 +101,10 @@ export default function ClosingSection({
               <button
                 type="button"
                 onClick={startBulkSale}
-                className="mt-4 h-14 w-full rounded-xl bg-primary-500 text-label-lg font-semibold text-white active:bg-primary-600"
+                disabled={busy !== null}
+                className="mt-4 h-14 w-full rounded-xl bg-primary-500 text-label-lg font-semibold text-white active:bg-primary-600 disabled:opacity-60"
               >
-                일괄 {lastScan.recommendedDiscount}% 마감 세일 시작하기
+                {busy === "sale" ? "마켓에 올리는 중…" : `일괄 ${lastScan.recommendedDiscount}% 마감 세일 시작하기`}
               </button>
             )}
 
@@ -100,6 +127,8 @@ export default function ClosingSection({
           </div>
         )}
       </section>
+
+      {error && <p className="mx-5 mt-3 text-center text-caption text-error-300">{error}</p>}
 
       {/* 5. AI 세트 추천 */}
       {lastScan && bundle && (
@@ -150,10 +179,11 @@ export default function ClosingSection({
               </Link>
               <button
                 type="button"
-                onClick={onAcceptBundle}
-                className="h-12 flex-[1.4] rounded-xl bg-primary-100 text-label-md font-semibold text-primary-600 active:bg-primary-200"
+                onClick={acceptBundle}
+                disabled={busy !== null}
+                className="h-12 flex-[1.4] rounded-xl bg-primary-100 text-label-md font-semibold text-primary-600 active:bg-primary-200 disabled:opacity-60"
               >
-                수락 및 판매
+                {busy === "bundle" ? "올리는 중…" : "수락 및 판매"}
               </button>
             </div>
           )}

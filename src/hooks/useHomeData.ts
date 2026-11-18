@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "@/lib/api";
+import { fetchLiveStatus, recommendBundles } from "@/components/sale/api";
+import { getScan } from "@/lib/scan";
 import {
   MOCK_HOME,
   MOCK_HOME_EMPTY,
+  buildClosing,
   buildHomeData,
   fetchHome,
   fetchProductions,
@@ -29,8 +32,8 @@ export function useHomeData({ empty = false, useMockOnly = false } = {}) {
     if (offline) return;
     let cancelled = false;
 
-    Promise.allSettled([fetchStore(), fetchStoreItems(), fetchProductions(), fetchHome()]).then(
-      ([store, items, productions, home]) => {
+    Promise.allSettled([fetchStore(), fetchStoreItems(), fetchProductions(), fetchHome(), fetchLiveStatus()]).then(
+      async ([store, items, productions, home, live]) => {
         if (cancelled) return;
         if (store.status === "rejected") {
           console.warn("[home] 가게 정보 불러오기 실패, 예시 데이터로 보여줘요", store.reason);
@@ -38,14 +41,33 @@ export function useHomeData({ empty = false, useMockOnly = false } = {}) {
           setFailed(true);
           return;
         }
-        setData(
-          buildHomeData({
-            store: store.value,
-            items: items.status === "fulfilled" ? items.value : [],
-            productions: productions.status === "fulfilled" ? productions.value : null,
-            home: home.status === "fulfilled" ? home.value : null,
+        const itemList = items.status === "fulfilled" ? items.value : [];
+        const base = buildHomeData({
+          store: store.value,
+          items: itemList,
+          productions: productions.status === "fulfilled" ? productions.value : null,
+          home: home.status === "fulfilled" ? home.value : null,
+        });
+        setData(base);
+
+        // ① 마감 모드 정보 (오늘 재고 스캔이 있을 때만 위험도·세트 추천을 더 불러옴)
+        const liveStatus = live.status === "fulfilled" ? live.value : null;
+        const scanId = liveStatus?.last_scan?.scan_id;
+        const [scan, recs] = await Promise.all([
+          scanId ? getScan(scanId).catch(() => null) : null,
+          scanId && !liveStatus?.bundle ? recommendBundles().catch(() => []) : [],
+        ]);
+        if (cancelled) return;
+        setData({
+          ...base,
+          ...buildClosing({
+            live: liveStatus,
+            scan,
+            recommendation: recs[0] ?? null,
+            items: itemList,
+            madeTotal: productions.status === "fulfilled" ? productions.value.made_total : 0,
           }),
-        );
+        });
       },
     );
 
