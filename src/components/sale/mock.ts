@@ -52,18 +52,39 @@ export const MOCK_BUNDLE_RECOMMENDATIONS: BundleRecommendation[] = [
 
 /** ④ 마감 세일 현황 mock (디자인 시안 숫자, 품목은 백엔드 기준) */
 export const MOCK_LIVE: LiveStatus = {
+  minutes_to_close: 102,
+  last_scan: null,
   discount: {
-    campaignId: 0,
-    rate: 30,
-    endsAt: null,
+    campaign_id: 0,
+    status: "active",
+    discount_rate: 30,
+    target_qty: 40,
+    sold_qty: 26,
+    progress: 0.65,
+    channels: { app: 18, store: 8 },
     items: [
-      { itemId: 10, name: "앙버터", startQty: 8, nowQty: 6 },
-      { itemId: 8, name: "소금빵", startQty: 15, nowQty: 5 },
-      { itemId: 9, name: "크루아상", startQty: 12, nowQty: 3 },
-      { itemId: 11, name: "소보로빵", startQty: 5, nowQty: 0 },
+      { item_id: 10, name: "앙버터", image_url: null, sale_price: 3500, start_qty: 8, sold_qty: 2, left_qty: 6, sold_out: false, slow: true },
+      { item_id: 8, name: "소금빵", image_url: null, sale_price: 2450, start_qty: 15, sold_qty: 10, left_qty: 5, sold_out: false, slow: false },
+      { item_id: 9, name: "크루아상", image_url: null, sale_price: 2800, start_qty: 12, sold_qty: 9, left_qty: 3, sold_out: false, slow: false },
+      { item_id: 11, name: "소보로빵", image_url: null, sale_price: 1960, start_qty: 5, sold_qty: 5, left_qty: 0, sold_out: true, slow: false },
+    ],
+    suggestion: { type: "raise_rate", item_ids: [10], next_rate: 50 },
+  },
+  bundle: {
+    campaign_id: 0,
+    status: "active",
+    name: "퇴근길 든든 팩",
+    price: 8800,
+    packs: 4,
+    sold_packs: 3,
+    left_packs: 1,
+    progress: 0.75,
+    channels: { app: 2, store: 1 },
+    composition: [
+      { item_id: 9, name: "크루아상", per_pack: 3 },
+      { item_id: 11, name: "소보로빵", per_pack: 1 },
     ],
   },
-  bundle: { campaignId: 0, name: "퇴근길 든든 팩", totalPacks: 4, soldPacks: 3 },
 };
 
 /** ④-1 마감 남은 빵 확인 mock */
@@ -130,10 +151,10 @@ export const MOCK_RECOMMENDATION: Recommendation = {
     sources: ["기상청 단기예보", "한국천문연구원 특일 정보"],
   },
   steps: [
-    { label: "같은 요일 평균", total: 121 },
-    { label: "날씨 보정", total: 111 },
-    { label: "공휴일 보정", total: 111 },
-    { label: "마감 결과 보정", total: 102 },
+    { label: "같은 요일 평균", total: 121, change_rate: null },
+    { label: "날씨 보정", total: 111, change_rate: -0.08 },
+    { label: "공휴일 보정", total: 111, change_rate: 0 },
+    { label: "마감 결과 보정", total: 102, change_rate: -0.08 },
   ],
   items: [
     { item_id: 8, name: "소금빵", image_url: null, today_made: 45, recommended: 27, change: -18, carryover_qty: 0, tags: ["비 예보"] },

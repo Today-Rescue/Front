@@ -8,7 +8,7 @@ import { BottomCta, CtaButton } from "@/components/common/CtaButton";
 import { useNow } from "@/hooks/useNow";
 import { API_BASE_URL } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
-import { fetchClosingRows, fetchRecommendation, saveClosing } from "./api";
+import { fetchClosingRows, fetchRecommendation, saveClosing, saveLeftQty } from "./api";
 import { MOCK_CLOSING_ROWS } from "./mock";
 import { SALE_PATHS } from "./paths";
 import type { ClosingChoice, ClosingRow, Recommendation } from "./types";
@@ -89,10 +89,16 @@ export default function ClosingScreen({ date, left }: { date?: string; left?: st
     setError(null);
     try {
       if (!isExample) {
+        const confirmed = rows.filter((r) => r.left !== null);
+        // 1) 남은 수량 확정 (마감 기록·판매 기록 계산은 남은 수량이 먼저 확정돼 있어야 함)
+        await saveLeftQty(
+          dateKey,
+          confirmed.map((r) => ({ item_id: r.itemId, made_qty: r.made, left_qty: r.left ?? 0 })),
+        );
+        // 2) 폐기 / 내일 판매 저장
         await saveClosing(
           dateKey,
-          rows
-            .filter((r) => r.left !== null)
+          confirmed
             .map((r) => {
               const qty = r.left ?? 0;
               const carry = choices[r.itemId] === "carryover";

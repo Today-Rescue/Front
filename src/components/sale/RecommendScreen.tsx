@@ -16,8 +16,12 @@ const formatRate = (rate: number) => {
 /** -10 → '−10', 2 → '+2' */
 const formatDelta = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n)}`;
 
-/** 손님이 늘어나는 쪽(공휴일·완판)은 주황, 나머지는 회색 */
-const isUpTag = (tag: string) => tag.includes("공휴일") || tag.includes("완판");
+/**
+ * 늘리는 사유(주황): 공휴일, 오늘 완판
+ * 줄이는 사유(회색): 비 예보, N일 연속 남음, 이월 재고
+ */
+const UP_TAGS = new Set(["공휴일", "오늘 완판"]);
+const isUpTag = (tag: string) => UP_TAGS.has(tag);
 
 /**
  * ⑧ 내일 생산 추천 (탭)
@@ -114,13 +118,17 @@ export default function RecommendScreen() {
               <h2 className="text-title-sm font-bold">이렇게 계산했어요</h2>
               <ul className="mt-2">
                 {rec.steps.map((step, i) => {
+                  // 증감률이 없으면(첫 단계) 비워 두고, 예전 응답처럼 아예 없으면 개수 차이로 보여줌
+                  const rate = step.change_rate;
                   const delta = i === 0 ? null : step.total - rec.steps[i - 1].total;
+                  const changeText = rate !== null && rate !== undefined ? formatRate(rate) : delta !== null ? formatDelta(delta) : null;
+                  const unchanged = rate === 0 || (rate == null && delta === 0);
                   return (
                     <li key={step.label} className="flex items-center gap-2 py-1.5 text-body-md">
                       <span className="flex-1 text-gray-800">{step.label}</span>
-                      {delta !== null && (
-                        <span className={`w-12 text-right ${delta === 0 ? "text-gray-500" : "text-primary-600"}`}>
-                          {formatDelta(delta)}
+                      {changeText && (
+                        <span className={`w-14 text-right ${unchanged ? "text-gray-500" : "text-primary-600"}`}>
+                          {changeText}
                         </span>
                       )}
                       <span className="w-12 text-right font-semibold">{step.total}</span>

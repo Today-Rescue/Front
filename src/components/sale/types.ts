@@ -62,29 +62,57 @@ export type BundleCalc = {
   better: { parts: BundlePart[]; packs: number; leftover: number } | null;
 };
 
-/** ④ 마감 세일 현황 (화면에서 쓰는 모양) */
+/** ④ 마감 세일 현황 (GET /stores/{id}/campaigns/live 응답 그대로) */
 export type LiveDiscountItem = {
-  itemId: number;
+  item_id: number;
   name: string;
+  image_url: string | null;
+  sale_price: number;
   /** 세일 시작 때 수량 */
-  startQty: number;
-  /** 지금 수량 (시작 수량 - 기록된 판매) */
-  nowQty: number;
+  start_qty: number;
+  sold_qty: number;
+  /** 지금 남은 수량 */
+  left_qty: number;
+  sold_out: boolean;
+  /** 거의 안 팔리는 품목 */
+  slow: boolean;
 };
 
 export type LiveStatus = {
+  minutes_to_close: number | null;
+  /** 오늘 마지막 재고 스캔. 오늘 스캔이 없으면 null */
+  last_scan: {
+    scan_id: number;
+    scanned_at: string;
+    total_quantity: number;
+    items: { item_id: number; quantity: number }[];
+  } | null;
   discount: {
-    campaignId: number;
-    rate: number;
-    /** 세일 끝나는 시각 (ISO) */
-    endsAt: string | null;
+    campaign_id: number;
+    status: "active" | "stopped" | "ended";
+    discount_rate: number;
+    target_qty: number;
+    sold_qty: number;
+    /** 0~1 (sold_qty ÷ target_qty) */
+    progress: number;
+    channels: Record<SaleChannel, number>;
     items: LiveDiscountItem[];
+    /** 다음 한 수. 세일 전체 할인율을 next_rate로 올리기 제안 (item_ids = 느린 품목) */
+    suggestion: { type: "raise_rate"; item_ids: number[]; next_rate: number } | null;
   } | null;
   bundle: {
-    campaignId: number;
+    campaign_id: number;
+    status: "active" | "stopped" | "ended";
     name: string;
-    totalPacks: number | null;
-    soldPacks: number;
+    price: number;
+    /** 전체 팩 */
+    packs: number;
+    sold_packs: number;
+    left_packs: number;
+    progress: number;
+    /** 채널별 판매 팩 수 */
+    channels: Record<SaleChannel, number>;
+    composition: { item_id: number; name: string; per_pack: number }[];
   } | null;
 };
 
@@ -158,7 +186,8 @@ export type Recommendation = {
     holiday_change: number;
     sources: string[];
   };
-  steps: { label: string; total: number }[];
+  /** 첫 단계는 change_rate가 null. 기록이 부족하면 첫 단계 label이 '오늘 판매' */
+  steps: { label: string; total: number; change_rate: number | null }[];
   items: {
     item_id: number;
     name: string;

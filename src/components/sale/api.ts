@@ -28,8 +28,8 @@ export type DiscountItemApi = {
   price: number;
   sale_price: number;
   left_qty: number | null; // 오늘 재고 스캔 전이면 null
-  level: string | null; // 오늘 재고 스캔 전이면 null
-  reason: string | null;
+  level: "danger" | "caution" | "safe" | null; // 오늘 재고 스캔 전이면 null
+  reason: string | null; // 사장님께 그대로 보여줄 한 줄 (예: '최근 5영업일 중 3일 남았어요')
   default_selected: boolean;
 };
 
@@ -72,26 +72,14 @@ function toSaleItem(item: DiscountItemApi): SaleItem {
   };
 }
 
-/**
- * 서버의 level 값을 화면용으로 바꾼다.
- * TODO(B): 실제 값 목록을 백엔드에 확인 (스캔 전이라 아직 null만 받아 봄)
- */
+/** 서버 level: danger(위험) / caution(주의) / safe(여유). 오늘 재고 스캔 전이면 null */
 function toRiskLevel(level: string | null): RiskLevel | null {
-  switch (level?.toLowerCase()) {
-    case "risk":
+  switch (level) {
     case "danger":
-    case "high":
-    case "위험":
       return "risk";
     case "caution":
-    case "warning":
-    case "medium":
-    case "주의":
       return "caution";
     case "safe":
-    case "ok":
-    case "low":
-    case "여유":
       return "safe";
     default:
       return null;
@@ -203,7 +191,7 @@ export function calculateBundleLocally(parts: (BundleCalcInput & { price: number
 export type CampaignApi = {
   id: number;
   type: "discount" | "bundle";
-  bundle: { name?: string; packs?: number; total_packs?: number } | null; // TODO(B): 세트 세일 응답 모양 확인
+  bundle: unknown; // 세트 이름·팩 수는 campaigns/live 의 bundle에서 읽음
   status: "active" | "stopped" | "ended";
   discount_rate: number | null;
   channel: SaleChannel;
@@ -228,94 +216,55 @@ export type CampaignSaleApi = {
   sold_at: string;
 };
 
-const isActive = (c: CampaignApi) => c.status === "active";
-
-/** 오늘 세일 중 진행 중인 것 (없으면 가장 최근 것) */
-async function fetchTodayCampaigns() {
-  const list = await api.get<CampaignApi[]>(storePath("/campaigns"));
-  const pick = (type: CampaignApi["type"]) => {
-    const ofType = list.filter((c) => c.type === type);
-    return ofType.find(isActive) ?? ofType.at(-1) ?? null;
-  };
-  return { discount: pick("discount"), bundle: pick("bundle") };
-}
-
 export function fetchCampaignSales(campaignId: number) {
   return api.get<CampaignSaleApi[]>(`/campaigns/${campaignId}/sales`);
 }
 
-/** 품목별 판매 수 합계 */
-const soldByItem = (sales: CampaignSaleApi[]) => {
-  const map = new Map<number, number>();
-  for (const s of sales) {
-    if (s.item_id !== null && s.unit !== "pack") map.set(s.item_id, (map.get(s.item_id) ?? 0) + s.quantity);
-  }
-  return map;
-};
-
 /**
- * ④ 마감 세일 현황. 오늘 세일이 하나도 없으면 null.
- * TODO(B): GET /stores/{id}/campaigns/live 응답 모양을 받으면 그걸로 바꾸기.
- *   지금은 오늘 세일이 없어 null만 받아 봐서, 응답 모양을 아는 세일 목록 + 판매 내역으로 계산함
+ * ④ 마감 세일 현황 (+ ④-1에서 쓰는 마지막 재고 스캔)
+ * 오늘 세일이 없으면 discount·bundle이 null, 오늘 재고 스캔이 없으면 last_scan이 null
  */
-export async function fetchLiveStatus(): Promise<LiveStatus | null> {
-  const { discount, bundle } = await fetchTodayCampaigns();
-  if (!discount && !bundle) return null;
-
-  const [discountSales, bundleSales] = await Promise.all([
-    discount ? fetchCampaignSales(discount.id) : Promise.resolve([]),
-    bundle ? fetchCampaignSales(bundle.id) : Promise.resolve([]),
-  ]);
-  const sold = soldByItem(discountSales);
-
-  return {
-    discount: discount && {
-      campaignId: discount.id,
-      rate: discount.discount_rate ?? 0,
-      endsAt: discount.ends_at,
-      items: discount.items.map((it) => ({
-        itemId: it.item_id,
-        name: it.name,
-        startQty: it.start_qty,
-        nowQty: Math.max(0, it.start_qty - (sold.get(it.item_id) ?? 0)),
-      })),
-    },
-    bundle: bundle && {
-      campaignId: bundle.id,
-      name: bundle.bundle?.name ?? "세트",
-      totalPacks: bundle.bundle?.total_packs ?? bundle.bundle?.packs ?? null,
-      soldPacks: bundleSales.filter((s) => s.unit === "pack").reduce((sum, s) => sum + s.quantity, 0),
-    },
-  };
+export function fetchLiveStatus() {
+  return api.get<LiveStatus>(storePath("/campaigns/live"));
 }
 
-/**
- * ④-1 마감 남은 빵 확인. 마지막 재고 스캔 수량이 없으면 null.
- * 처음 채워 둘 수량 = 스캔 수량 - 세일 중 기록된 판매
- * TODO(B): 판매 속도로 예상한 수량을 서버가 주면 그 값으로 바꾸기 (스캔 시각도 함께)
- */
-export async function fetchRemainingRows(): Promise<{ rows: RemainingRow[]; discountCampaignId: number | null; activeCampaignIds: number[] } | null> {
-  const [items, campaigns] = await Promise.all([
-    api.get<DiscountItemApi[]>(storePath("/campaigns/discount")),
-    fetchTodayCampaigns(),
-  ]);
-  if (items.every((it) => it.left_qty === null)) return null;
+/** 진행 중(active)인 세일 id들. 영업 종료 때 하나씩 끝냄 */
+export const activeCampaignIds = (live: LiveStatus) =>
+  [live.discount, live.bundle].filter((c) => c?.status === "active").map((c) => c!.campaign_id);
 
-  const sales = campaigns.discount ? await fetchCampaignSales(campaigns.discount.id) : [];
-  const sold = soldByItem(sales);
+/**
+ * ④-1 마감 남은 빵 확인. 오늘 재고 스캔이 없으면 null.
+ * 처음 채워 둘 수량 = 마지막 스캔 수량 - 그 뒤 세일에서 기록된 판매 (할인 판매 + 세트 판매 × 한 팩 개수)
+ * (서버가 예상 수량을 따로 주지 않음. 스캔 응답의 expected_left는 이후 판매가 반영 안 돼서 쓰지 않음)
+ */
+export async function fetchRemainingRows(): Promise<{
+  rows: RemainingRow[];
+  scannedAt: string;
+  live: LiveStatus;
+} | null> {
+  const [live, items] = await Promise.all([fetchLiveStatus(), api.get<ItemApi[]>(storePath("/items"))]);
+  if (!live.last_scan) return null;
+
+  const names = new Map(items.map((i) => [i.id, i.name]));
+  const sold = new Map<number, number>();
+  for (const it of live.discount?.items ?? []) sold.set(it.item_id, (sold.get(it.item_id) ?? 0) + it.sold_qty);
+  for (const part of live.bundle?.composition ?? []) {
+    sold.set(part.item_id, (sold.get(part.item_id) ?? 0) + part.per_pack * live.bundle!.sold_packs);
+  }
 
   return {
-    rows: items
-      .filter((it) => it.left_qty !== null)
-      .map((it) => {
-        const scanQty = it.left_qty ?? 0;
-        const recordedSold = Math.min(scanQty, sold.get(it.item_id) ?? 0);
-        return { itemId: it.item_id, name: it.name, scanQty, estimatedQty: scanQty - recordedSold, recordedSold };
-      }),
-    discountCampaignId: campaigns.discount && isActive(campaigns.discount) ? campaigns.discount.id : null,
-    activeCampaignIds: [campaigns.discount, campaigns.bundle]
-      .filter((c): c is CampaignApi => c !== null && isActive(c))
-      .map((c) => c.id),
+    rows: live.last_scan.items.map((it) => {
+      const recordedSold = Math.min(it.quantity, sold.get(it.item_id) ?? 0);
+      return {
+        itemId: it.item_id,
+        name: names.get(it.item_id) ?? "품목",
+        scanQty: it.quantity,
+        estimatedQty: it.quantity - recordedSold,
+        recordedSold,
+      };
+    }),
+    scannedAt: live.last_scan.scanned_at,
+    live,
   };
 }
 
@@ -324,7 +273,10 @@ export function updateDiscountRate(campaignId: number, rate: number) {
   return api.patch<unknown>(`/campaigns/${campaignId}`, { discount_rate: rate });
 }
 
-/** 판매 확정 → 남은 수량 차감. 일괄 할인은 items, 세트는 packs */
+/**
+ * 판매 확정 → 남은 수량 차감. 일괄 할인은 items, 세트는 packs
+ * 지금은 서버의 차감 함수가 아직 없어서 501 APPLY_SALE_NOT_READY가 옴 (머지되면 코드 수정 없이 동작)
+ */
 export function recordSales(
   campaignId: number,
   body: { channel: SaleChannel; items: { item_id: number; quantity: number }[] } | { channel: SaleChannel; packs: number },
@@ -391,7 +343,18 @@ export async function fetchClosingRows(date: string, leftOverride: Record<number
   return { rows, isClosed: closing.is_closed };
 }
 
-/** 마감 기록 저장 (폐기/내일 판매). 남은 수량 = 폐기 + 내일 판매 */
+/**
+ * 남은 수량 확정 (PUT /stores/{id}/records/{date}).
+ * 마감 기록과 판매 기록(정가 판매 = 만든 - 남은 - 할인 판매)은 남은 수량이 먼저 확정돼 있어야 계산됨
+ */
+export function saveLeftQty(date: string, items: { item_id: number; made_qty: number; left_qty: number }[]) {
+  return api.put<unknown>(
+    storePath(`/records/${date}`),
+    items.map((i) => ({ ...i, sold_out: i.left_qty === 0 })),
+  );
+}
+
+/** 마감 기록 저장 (폐기/내일 판매). 확정된 남은 수량 기준으로 폐기·이월만 저장 (판매 수는 다시 계산하지 않음) */
 export function saveClosing(date: string, items: { item_id: number; disposed_qty: number; carryover_qty: number }[]) {
   return api.put<ClosingResultApi>(storePath(`/closings/${date}`), { items });
 }
