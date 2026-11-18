@@ -36,7 +36,7 @@ export type FirstDisplay = {
 
 export type ScanSummary = {
   time: Clock; // 마지막 스캔 시각
-  shelves: number;
+  shelves?: number; // 매대 수 (서버에서 모르면 없음)
   madeTotal: number; // 오늘 만든 총량
   remaining: number; // 남은 재고
   riskKinds: number; // 위험 품목 수
@@ -50,6 +50,8 @@ export type BundleSuggestion = {
   packs: number; // 4
   /** 구성 설명에 굵게 보여줄 품목 */
   items: { name: string; qty: number }[];
+  /** 마켓에 올릴 때 보내는 구성 (품목 ID, 한 팩에 몇 개) */
+  parts?: { itemId: number; perPack: number }[];
 };
 
 export type HomeData = {

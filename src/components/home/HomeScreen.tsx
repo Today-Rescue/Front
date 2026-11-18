@@ -4,6 +4,7 @@ import { useHomeData } from "@/hooks/useHomeData";
 import { useOnboardingDraft } from "@/hooks/useOnboardingDraft";
 import { useSlowFlag } from "@/hooks/useSlowFlag";
 import { MOCK_HOME_EMPTY } from "@/lib/home";
+import { createBundle } from "@/components/sale/api";
 import { useNow } from "@/hooks/useNow";
 import { clockToMinutes, dateToMinutes } from "@/lib/time";
 import ClosingSection from "./ClosingSection";
@@ -86,8 +87,16 @@ export default function HomeScreen(options: HomeScreenOptions) {
       ) : (
         <ClosingSection
           data={data}
-          onAcceptBundle={() => {
-            // TODO(C): POST /stores/{id}/campaigns/bundle 로 게시 (B와 요청 형식 맞추기)
+          onAcceptBundle={async () => {
+            const b = data.bundle;
+            if (b?.parts) {
+              // 추천 세트를 그대로 마켓에 올림 (POST /stores/{id}/campaigns/bundle)
+              await createBundle({
+                name: b.name,
+                price: b.price,
+                items: b.parts.map((p) => ({ item_id: p.itemId, per_pack: p.perPack })),
+              });
+            }
             setData((prev) => (prev ? { ...prev, bundleOnSale: true } : prev));
           }}
         />
