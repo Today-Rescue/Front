@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import HeaderBar from "@/components/common/HeaderBar";
 import { BottomCta, CtaButton } from "@/components/common/CtaButton";
-import Stepper from "@/components/scan/Stepper";
 import { API_BASE_URL } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
 import { calculateBundle, calculateBundleLocally, createBundle, fetchDiscountItems, recommendBundles } from "./api";
@@ -12,6 +11,7 @@ import LevelBadge from "./LevelBadge";
 import { MOCK_BUNDLE_RECOMMENDATIONS, MOCK_RECOMMENDED_RATE, MOCK_SALE_ITEMS } from "./mock";
 import SaleMethodTabs from "./SaleMethodTabs";
 import type { BundleCalc, BundlePart, BundleRecommendation, SaleItem } from "./types";
+import UnitStepper from "./UnitStepper";
 import { formatWon, sortByLevel } from "./utils";
 
 /** 추천 세트를 쓰지 않고 직접 구성했을 때 세트 이름 */
@@ -179,26 +179,29 @@ export default function BundleScreen() {
 
   return (
     <main>
-      <HeaderBar title="판매 방법 정하기" step={{ current: 2, total: 2 }} />
+      <HeaderBar title="판매 방법 정하기" />
 
-      <div className="px-5 pt-2">
+      <div className="px-6 pt-2">
         <SaleMethodTabs active="bundle" />
 
         {/* 추천 세트 */}
         <section className="mt-6">
-          <p className="text-label-md font-semibold text-primary-600">AI 추천 · 재고 많은 품목 조합</p>
-          <div className="mt-1 flex items-center gap-2">
-            <h2 className="flex-1 truncate text-heading-sm font-bold">{name}</h2>
+          <div className="flex items-center gap-2">
+            <p className="flex-1 text-label-md font-semibold text-primary-600">AI 추천 · 재고 많은 품목 조합</p>
             {recommendations.length > 0 && (
               <button
                 type="button"
                 onClick={showNextRecommendation}
-                className="shrink-0 text-label-md font-semibold text-gray-700 underline"
+                className="shrink-0 text-label-md font-semibold text-primary-600 underline underline-offset-2"
               >
                 다른 조합 보기
               </button>
             )}
           </div>
+          <h2 className="mt-1 truncate text-heading-sm font-bold">{name}</h2>
+          <p className="mt-1 text-body-md text-gray-700">
+            남는 재고가 가장 적은 구성을 자동으로 골라두었어요. 바꾸면 팩 수를 바로 다시 계산해요.
+          </p>
           {exampleStock && (
             <p className="mt-2 rounded-lg bg-gray-100 px-3 py-2 text-caption text-gray-700">
               오늘 남은 재고를 아직 찍지 않아서 예시 수량으로 계산하고 있어요.
@@ -209,98 +212,107 @@ export default function BundleScreen() {
         {/* 최소 구성 안내 */}
         {shownCalc &&
           (shownCalc.better ? (
-            <section className="mt-4 rounded-2xl border border-dashed border-primary-400 px-4 py-3">
-              <p className="text-label-md font-semibold text-primary-600">더 적게 남는 구성이 있어요</p>
-              <p className="mt-0.5 text-body-md text-gray-800">
-                {describeParts(shownCalc.better.parts)} · {shownCalc.better.packs}팩 · {shownCalc.better.leftover}개 남음
-              </p>
+            <section className="mt-4 flex items-start gap-3 rounded-2xl border border-dashed border-primary-400 bg-white px-4 py-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-label-md font-semibold text-primary-600">더 적게 남는 구성이 있어요</p>
+                <p className="mt-0.5 text-body-md text-gray-800">
+                  {describeParts(shownCalc.better.parts)} · {shownCalc.better.packs}팩 · {shownCalc.better.leftover}개 남음
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => applyParts(shownCalc.better!.parts, null)}
-                className="mt-2 h-10 rounded-lg bg-primary-50 px-4 text-label-md font-semibold text-primary-600 active:bg-primary-100"
+                className="shrink-0 text-label-md font-semibold text-primary-600 underline underline-offset-2"
               >
                 적용
               </button>
             </section>
           ) : (
-            <section className="mt-4 rounded-2xl bg-primary-50 px-4 py-3">
-              <p className="text-label-md font-semibold text-primary-600">남는 재고 최소 구성 적용 중</p>
-              <p className="mt-0.5 text-caption text-gray-700">지금 재고로 가장 적게 남는 조합이에요.</p>
+            <section className="mt-4 flex items-start gap-3 rounded-2xl border border-primary-200 bg-primary-50 px-4 py-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-label-md font-semibold text-primary-600">남는 재고 최소 구성 적용 중</p>
+                <p className="mt-0.5 text-body-md text-gray-800">
+                  {describeParts(parts)}
+                </p>
+              </div>
             </section>
           ))}
 
         {/* 한 팩 구성 */}
         <section aria-label="한 팩 구성" className="mt-6">
           <p className="text-label-md font-semibold">한 팩 구성</p>
-          <ul className="mt-2 rounded-2xl bg-gray-100 px-4">
-            {parts.map((p) => {
-              const item = itemById.get(p.itemId);
-              if (!item) return null;
-              return (
-                <li key={p.itemId} className="flex items-center gap-2 border-b border-gray-300 py-2 last:border-0">
-                  <button
-                    type="button"
-                    onClick={() => removeItem(p.itemId)}
-                    aria-label={`${item.name} 빼기`}
-                    className="-ml-1 flex size-7 shrink-0 items-center justify-center rounded-full text-gray-500 active:bg-gray-200"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
-                      <path d="M6 6l12 12M18 6L6 18" />
-                    </svg>
-                  </button>
-                  <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-1.5">
-                      <span className="truncate text-body-lg font-semibold">{item.name}</span>
-                      <LevelBadge level={item.level} />
-                    </p>
-                    <p className="text-caption text-gray-600">재고 {item.remaining ?? "–"}개</p>
-                  </div>
-                  <Stepper
-                    value={p.perPack}
-                    onChange={(next) => changePerPack(p.itemId, next)}
-                    min={1}
-                    max={item.remaining ?? undefined}
-                    size="sm"
-                    label={`${item.name} 한 팩 수량`}
-                  />
-                </li>
-              );
-            })}
-            {parts.length === 0 && (
-              <li className="py-4 text-center text-body-md text-gray-600">세트에 넣을 빵을 추가해 주세요</li>
-            )}
-          </ul>
-
-          {/* 품목 추가 */}
-          {addableItems.length > 0 && (
-            <>
-              <button
-                type="button"
-                aria-expanded={adding}
-                onClick={() => setAdding((v) => !v)}
-                className="mt-2 flex h-11 w-full items-center justify-center gap-1 rounded-xl border border-gray-300 text-label-md font-semibold text-gray-800 active:bg-gray-100"
-              >
-                <span aria-hidden className="text-primary-500">＋</span>품목 추가
-              </button>
-              {adding && (
-                <ul className="mt-2 rounded-2xl border border-gray-300 px-4">
-                  {addableItems.map((item) => (
-                    <li key={item.itemId} className="border-b border-gray-200 last:border-0">
-                      <button
-                        type="button"
-                        onClick={() => addItem(item.itemId)}
-                        className="flex h-12 w-full items-center gap-2 text-left"
-                      >
-                        <span className="flex-1 truncate text-body-lg">{item.name}</span>
+          <div className="mt-2 rounded-2xl bg-gray-100 px-4">
+            <ul>
+              {parts.map((p) => {
+                const item = itemById.get(p.itemId);
+                if (!item) return null;
+                return (
+                  <li key={p.itemId} className="flex items-center gap-2 border-b border-gray-300 py-3">
+                    <button
+                      type="button"
+                      onClick={() => removeItem(p.itemId)}
+                      aria-label={`${item.name} 빼기`}
+                      className="-ml-1 flex size-7 shrink-0 items-center justify-center rounded-full text-gray-500 active:bg-gray-200"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
+                        <path d="M6 6l12 12M18 6L6 18" />
+                      </svg>
+                    </button>
+                    <div className="min-w-0 flex-1">
+                      <p className="flex items-center gap-1.5">
+                        <span className="truncate text-title-sm font-semibold">{item.name}</span>
                         <LevelBadge level={item.level} />
-                        <span className="text-caption text-gray-600">재고 {item.remaining}개</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                      </p>
+                      <p className="text-caption text-gray-600">재고 {item.remaining ?? "–"}개</p>
+                    </div>
+                    <UnitStepper
+                      value={p.perPack}
+                      onChange={(next) => changePerPack(p.itemId, next)}
+                      min={1}
+                      max={item.remaining ?? undefined}
+                      label={`${item.name} 한 팩 수량`}
+                    />
+                  </li>
+                );
+              })}
+              {parts.length === 0 && (
+                <li className="border-b border-gray-300 py-4 text-center text-body-md text-gray-600">
+                  세트에 넣을 빵을 추가해 주세요
+                </li>
               )}
-            </>
-          )}
+            </ul>
+
+            {/* 품목 추가 */}
+            <button
+              type="button"
+              aria-expanded={adding}
+              onClick={() => setAdding((v) => !v)}
+              className="flex h-12 w-full items-center gap-2 text-label-md font-semibold text-primary-600"
+            >
+              <span aria-hidden className="size-4 rounded bg-primary-300" />
+              품목 추가
+            </button>
+            {adding && (
+              <ul className="mb-3 rounded-xl bg-white px-3">
+                {addableItems.map((item) => (
+                  <li key={item.itemId} className="border-b border-gray-200 last:border-0">
+                    <button
+                      type="button"
+                      onClick={() => addItem(item.itemId)}
+                      className="flex h-12 w-full items-center gap-2 text-left"
+                    >
+                      <span className="flex-1 truncate text-body-lg">{item.name}</span>
+                      <LevelBadge level={item.level} />
+                      <span className="text-caption text-gray-600">재고 {item.remaining}개</span>
+                    </button>
+                  </li>
+                ))}
+                {addableItems.length === 0 && (
+                  <li className="py-3 text-center text-caption text-gray-600">더 넣을 수 있는 빵이 없어요</li>
+                )}
+              </ul>
+            )}
+          </div>
         </section>
 
         {/* 팩 판매가 */}
@@ -318,17 +330,27 @@ export default function BundleScreen() {
                 setCustomPrice(digits === "" ? 0 : Number(digits));
               }}
               placeholder="0"
-              className="min-w-0 flex-1 bg-transparent text-right text-heading-sm font-bold outline-none"
+              className="min-w-0 flex-1 bg-transparent text-left text-heading-sm font-bold outline-none"
             />
             <span className="ml-1 text-title-lg font-semibold">원</span>
           </div>
-          <p className="mt-2 flex flex-wrap items-center gap-x-2 text-caption text-gray-600">
-            <span>단품 정가 합계 {formatWon(unitTotal)}</span>
-            {discountPercent !== null && discountPercent > 0 && (
-              <b className="font-semibold text-primary-600">{discountPercent}% 할인</b>
+          <p className="mt-2 text-caption text-gray-600">
+            단품 정가 합계는 등록된 상품 가격으로 계산해 보여드려요.
+            {unitTotal > 0 && (
+              <>
+                {" "}
+                정가 {formatWon(unitTotal)}
+                {discountPercent !== null && discountPercent > 0 && (
+                  <b className="font-semibold text-primary-600"> · {discountPercent}% 할인</b>
+                )}
+              </>
             )}
             {customPrice !== null && suggestedPrice > 0 && customPrice !== suggestedPrice && (
-              <button type="button" onClick={() => setCustomPrice(null)} className="font-semibold text-primary-600 underline">
+              <button
+                type="button"
+                onClick={() => setCustomPrice(null)}
+                className="ml-1 font-semibold text-primary-600 underline"
+              >
                 추천가 {formatWon(suggestedPrice)}
               </button>
             )}
@@ -337,19 +359,22 @@ export default function BundleScreen() {
 
         {/* 요약 */}
         <section aria-label="세트 계산 결과" className="mt-4 grid grid-cols-2 gap-2">
-          <div className="rounded-2xl bg-primary-50 px-4 py-3">
+          <div className="rounded-2xl bg-primary-50 px-4 py-4">
             <p className="text-caption text-gray-700">만들 수 있는 팩</p>
-            <p className="text-heading-md font-bold">{shownCalc ? `${packs}팩` : "–"}</p>
+            <p className="mt-1 text-heading-md font-bold">{shownCalc ? `${packs}팩` : "–"}</p>
           </div>
-          <div className="rounded-2xl bg-gray-100 px-4 py-3">
+          <div className="rounded-2xl bg-gray-100 px-4 py-4">
             <p className="text-caption text-gray-700">묶고 남는 재고</p>
-            <p className="text-heading-md font-bold">{shownCalc ? `${shownCalc.leftover}개` : "–"}</p>
-            {shownCalc && parts.length > 0 && (
-              <p className="mt-0.5 text-caption text-gray-600">
-                {parts
-                  .map((p) => `${itemById.get(p.itemId)?.name ?? "품목"} ${shownCalc.leftoverByItem[p.itemId] ?? 0}`)
-                  .join(" · ")}
-              </p>
+            {shownCalc && parts.length > 0 ? (
+              <ul className="mt-1 space-y-0.5">
+                {parts.map((p) => (
+                  <li key={p.itemId} className="truncate text-label-md font-semibold">
+                    {itemById.get(p.itemId)?.name ?? "품목"} {shownCalc.leftoverByItem[p.itemId] ?? 0}개
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1 text-heading-md font-bold">–</p>
             )}
           </div>
         </section>

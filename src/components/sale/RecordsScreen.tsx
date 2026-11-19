@@ -14,8 +14,8 @@ import { formatDateLabel, fromDateKey, toDateKey, weekdayOf } from "./utils";
 const SEGMENTS = [
   { key: "regular_sold", label: "정가 판매", color: "bg-gray-800" },
   { key: "discount_sold", label: "할인 판매", color: "bg-primary-500" },
-  { key: "carryover", label: "내일 판매", color: "bg-gray-500" },
-  { key: "disposed", label: "폐기", color: "bg-gray-300" },
+  { key: "carryover", label: "내일 판매", color: "bg-gray-600" },
+  { key: "disposed", label: "폐기", color: "bg-gray-400" },
 ] as const;
 
 /** 그 달 1일부터 마지막 날(이번 달이면 오늘)까지 날짜 목록 */
@@ -97,7 +97,7 @@ export default function RecordsScreen({ date }: { date?: string }) {
 
   return (
     <main className="pb-6">
-      <header className="flex items-baseline justify-between px-5 pt-6 pb-4">
+      <header className="flex items-baseline justify-between px-6 pt-6 pb-4">
         <h1 className="text-heading-lg font-bold">판매 기록</h1>
         {month && (
           <span className="text-body-md text-gray-700">
@@ -107,7 +107,7 @@ export default function RecordsScreen({ date }: { date?: string }) {
       </header>
 
       {/* 날짜 칩 */}
-      <nav aria-label="날짜 선택" className="mx-5 flex gap-2 overflow-x-auto pb-1">
+      <nav aria-label="날짜 선택" className="mx-6 flex gap-2 overflow-x-auto pb-1">
         {days.map((d) => {
           const active = d === selected;
           const hasRecord = recordDays.has(d) || d === today;
@@ -132,7 +132,7 @@ export default function RecordsScreen({ date }: { date?: string }) {
         })}
       </nav>
 
-      <div className="px-5">
+      <div className="px-6">
         {isExample && (
           <p className="mt-3 rounded-lg bg-gray-100 px-3 py-2 text-caption text-gray-700">
             서버에 연결되지 않아 예시 기록을 보여주고 있어요.
@@ -153,8 +153,8 @@ export default function RecordsScreen({ date }: { date?: string }) {
           </p>
 
           {barTotal > 0 && (
-            <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-gray-200" aria-hidden>
-              {SEGMENTS.map((s) => (
+            <div className="mt-3 flex h-3 gap-0.5 overflow-hidden rounded-full" aria-hidden>
+              {SEGMENTS.filter((s) => total[s.key] > 0).map((s) => (
                 <div key={s.key} className={s.color} style={{ width: `${(total[s.key] / barTotal) * 100}%` }} />
               ))}
             </div>
@@ -194,9 +194,7 @@ export default function RecordsScreen({ date }: { date?: string }) {
                     <td className="py-3 text-right text-gray-700">{item.made}</td>
                     <td className="py-3 text-right text-gray-700">{item.regular_sold ?? "–"}</td>
                     <td className="py-3 text-right font-semibold text-primary-600">{item.discount_sold}</td>
-                    <td className={`py-3 text-right font-semibold ${item.disposed ? "text-error-300" : ""}`}>
-                      {leftLabel(item)}
-                    </td>
+                    <td className="py-3 text-right font-medium">{leftLabel(item)}</td>
                   </tr>
                 ))}
               </tbody>

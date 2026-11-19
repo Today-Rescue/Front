@@ -6,10 +6,8 @@ import { useRouter } from "next/navigation";
 import HeaderBar from "@/components/common/HeaderBar";
 import { BottomCta, CtaButton } from "@/components/common/CtaButton";
 import Stepper from "@/components/scan/Stepper";
-import { useNow } from "@/hooks/useNow";
 import { API_BASE_URL, ApiError } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
-import { minutesToClock, dateToMinutes } from "@/lib/time";
 import { activeCampaignIds, endCampaign, fetchRemainingRows, recordSales } from "./api";
 import { MOCK_REMAINING, MOCK_SCAN_TIME } from "./mock";
 import { SALE_PATHS } from "./paths";
@@ -27,7 +25,6 @@ const initialCounts = (rows: RemainingRow[]) => Object.fromEntries(rows.map((r) 
  */
 export default function RemainingCheckScreen() {
   const router = useRouter();
-  const now = useNow();
 
   const [rows, setRows] = useState<RemainingRow[]>(MOCK_REMAINING);
   const [scanTime, setScanTime] = useState<string | null>(MOCK_SCAN_TIME);
@@ -104,13 +101,11 @@ export default function RemainingCheckScreen() {
       <HeaderBar
         title="마감 남은 빵 확인"
         backHref={SALE_PATHS.status}
-        right={now && <span className="text-caption font-medium text-gray-600">{minutesToClock(dateToMinutes(now))}</span>}
       />
 
-      <div className="px-5 pt-2">
+      <div className="px-6 pt-2">
         {/* 안내 배너 */}
         <section className="flex items-center gap-3 rounded-2xl bg-primary-50 px-4 py-3">
-          <span aria-hidden className="size-5 shrink-0 rounded bg-primary-300" />
           <p className="flex-1 text-body-md text-gray-800">판매 속도로 예상한 남은 수량을 먼저 채워뒀어요</p>
           <Link href={ROUTES.scan} className="shrink-0 text-label-md font-semibold text-primary-600 underline">
             사진으로 확인
@@ -141,8 +136,7 @@ export default function RemainingCheckScreen() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-title-sm font-semibold">{row.name}</p>
                   <p className="text-caption text-gray-600">
-                    {scanTime ? `${scanTime} ` : ""}
-                    {row.scanQty}개 → 팔림 <b className="font-semibold text-primary-600">{row.scanQty - left}</b>
+                    {row.scanQty}개 → <b className="font-semibold text-primary-600">{row.scanQty - left}개</b> 팔림
                   </p>
                 </div>
                 <Stepper

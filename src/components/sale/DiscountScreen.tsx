@@ -78,9 +78,9 @@ export default function DiscountScreen() {
 
   return (
     <main>
-      <HeaderBar title="판매 방법 정하기" step={{ current: 2, total: 2 }} />
+      <HeaderBar title="판매 방법 정하기" />
 
-      <div className="px-5 pt-2">
+      <div className="px-6 pt-2">
         <SaleMethodTabs active="discount" />
 
         {/* 안내 */}
@@ -128,7 +128,7 @@ export default function DiscountScreen() {
           <ul className="mt-2 rounded-2xl bg-gray-100 px-4">
             {items.map((item) => (
               <li key={item.itemId} className="border-b border-gray-300 last:border-0">
-                <label className="flex h-14 cursor-pointer items-center gap-3">
+                <label className="flex h-12 cursor-pointer items-center gap-3">
                   <input
                     type="checkbox"
                     checked={selectedIds.has(item.itemId)}
@@ -138,7 +138,7 @@ export default function DiscountScreen() {
                   <CheckBox checked={selectedIds.has(item.itemId)} />
                   <span className="flex-1 truncate text-body-lg">{item.name}</span>
                   <LevelBadge level={item.level} />
-                  <span className="w-10 text-right text-caption text-gray-600">
+                  <span className="w-12 text-right text-body-md text-gray-600">
                     {item.remaining === null ? "–" : `${item.remaining}개`}
                   </span>
                 </label>

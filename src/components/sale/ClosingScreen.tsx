@@ -12,7 +12,7 @@ import { fetchClosingRows, fetchRecommendation, saveClosing, saveLeftQty } from 
 import { MOCK_CLOSING_ROWS } from "./mock";
 import { SALE_PATHS } from "./paths";
 import type { ClosingChoice, ClosingRow, Recommendation } from "./types";
-import { formatDateLabel, parseLeftParam, toDateKey, withTopic } from "./utils";
+import { parseLeftParam, toDateKey, withTopic } from "./utils";
 
 const defaultChoices = (rows: ClosingRow[]) =>
   Object.fromEntries(rows.map((r) => [r.itemId, r.defaultChoice])) as Record<number, ClosingChoice>;
@@ -119,11 +119,10 @@ export default function ClosingScreen({ date, left }: { date?: string; left?: st
       <HeaderBar
         title={isToday ? "오늘 마감 기록" : "마감 기록 수정"}
         // 오늘 마감 흐름이면 ④-1로, ⑥에서 다른 날 기록을 고치러 왔으면 이전 화면으로
-        backHref={date ? undefined : SALE_PATHS.remainingCheck}
-        right={dateKey && <span className="text-caption font-medium text-gray-600">{formatDateLabel(dateKey, false)}</span>}
+        backHref={date ? undefined : SALE_PATHS.remainingCheck}
       />
 
-      <div className="px-5 pt-2">
+      <div className="px-6 pt-2">
         <section>
           <h2 className="text-heading-sm font-bold">남은 빵을 어떻게 처리할까요?</h2>
           <p className="mt-1 text-body-md text-gray-700">
