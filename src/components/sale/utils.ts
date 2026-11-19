@@ -35,10 +35,11 @@ export const fromDateKey = (key: string) => {
 /** '2026-11-08' → '월' 같은 요일 한 글자 */
 export const weekdayOf = (key: string) => WEEKDAYS[fromDateKey(key).getDay()];
 
-/** '2026-11-08' → '11월 8일 (토)' */
-export const formatDateLabel = (key: string, withWeekday = true) => {
+/** '2026-11-08' → '11월 8일 (토)'. padDay=true 면 '11월 08일 (토)' */
+export const formatDateLabel = (key: string, withWeekday = true, padDay = false) => {
   const d = fromDateKey(key);
-  return `${d.getMonth() + 1}월 ${d.getDate()}일${withWeekday ? ` (${WEEKDAYS[d.getDay()]})` : ""}`;
+  const day = padDay ? String(d.getDate()).padStart(2, "0") : d.getDate();
+  return `${d.getMonth() + 1}월 ${day}일${withWeekday ? ` (${WEEKDAYS[d.getDay()]})` : ""}`;
 };
 
 /** ④-1 → ⑤로 남은 수량 넘길 때 주소에 쓰는 모양. { 8: 5, 9: 2 } → '8:5,9:2' */

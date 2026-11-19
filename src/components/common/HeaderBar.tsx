@@ -36,35 +36,36 @@ export default function HeaderBar({ title, backHref, onBack, step, progress, rig
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 bg-white px-4">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 bg-white px-6">
       <button
         type="button"
         onClick={handleBack}
         aria-label="뒤로 가기"
-        className="-ml-2 flex size-10 shrink-0 items-center justify-center rounded-full active:bg-gray-100"
+        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-gray-100 active:bg-gray-200"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path d="M15 5l-7 7 7 7" stroke="var(--color-black)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path d="M15 5l-7 7 7 7" stroke="var(--color-black)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
-      {title && <h1 className="flex-1 truncate text-title-lg font-semibold">{title}</h1>}
+      {title && <h1 className="flex-1 truncate text-title-sm font-semibold">{title}</h1>}
       {!title && !progress && <div className="flex-1" />}
 
+      {/* 온보딩 진행 표시: 가운데 점(●○○) + 오른쪽 '1 / 3' */}
       {progress && (
-        <div className="flex flex-1 items-center gap-3 pl-2">
-          <div className="flex flex-1 gap-1">
+        <>
+          <div className="flex flex-1 justify-center gap-1.5" aria-hidden>
             {Array.from({ length: progress.total }, (_, i) => (
               <span
                 key={i}
-                className={`h-1 flex-1 rounded-full ${i < progress.current ? "bg-primary-500" : "bg-gray-200"}`}
+                className={`size-2.5 rounded-full ${i + 1 === progress.current ? "bg-primary-500" : "bg-gray-200"}`}
               />
             ))}
           </div>
-          <span className="text-caption font-medium text-gray-600">
+          <span className="w-11 text-right text-body-md text-gray-700">
             {progress.current} / {progress.total}
           </span>
-        </div>
+        </>
       )}
 
       {step && (

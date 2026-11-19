@@ -11,7 +11,7 @@ import { formatDuration } from "@/lib/time";
 import { fetchLiveStatus, updateDiscountRate } from "./api";
 import { MOCK_LIVE } from "./mock";
 import { SALE_PATHS } from "./paths";
-import { CHANNEL_LABEL, type LiveDiscountItem, type LiveStatus } from "./types";
+import type { LiveDiscountItem, LiveStatus } from "./types";
 import { withSubject } from "./utils";
 
 /** 현황을 다시 불러오는 간격 */
@@ -94,15 +94,9 @@ export default function LiveStatusScreen() {
       <HeaderBar
         title="마감 세일 현황"
         backHref={ROUTES.home}
-        right={
-          <span className="flex items-center gap-1.5 text-label-md font-semibold text-primary-600">
-            <span aria-hidden className="size-2 rounded-full bg-primary-500" />
-            진행 중
-          </span>
-        }
       />
 
-      <div className="px-5 pt-2">
+      <div className="px-6 pt-2">
         {noSaleToday && (
           <p className="mb-3 rounded-lg bg-gray-100 px-3 py-2 text-caption text-gray-700">
             오늘 진행 중인 마감 세일이 없어서 예시 화면을 보여주고 있어요.
@@ -130,19 +124,15 @@ export default function LiveStatusScreen() {
               <div className="h-full rounded-full bg-primary-500" style={{ width: `${discount.progress * 100}%` }} />
             </div>
             <div className="mt-2 flex justify-between text-caption text-gray-600">
-              <span>
-                {CHANNEL_LABEL.app} {discount.channels.app} · {CHANNEL_LABEL.store} {discount.channels.store}
-              </span>
+              <span>판매 속도로 추정 · 마감 때 확인</span>
               <span>남은 {leftQty}개</span>
             </div>
-            <p className="mt-1 text-caption text-gray-600">판매 속도로 추정한 값이며 마감 때 확인해요</p>
           </section>
         )}
 
         {/* 세트 현황 */}
         {bundle && (
           <section className="mt-3 flex items-center gap-3 rounded-2xl border border-primary-200 bg-primary-50 px-4 py-4">
-            <span aria-hidden className="size-10 shrink-0 rounded-lg bg-primary-300" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-title-sm font-semibold">{bundle.name}</p>
               <p className="text-caption text-gray-700">
@@ -172,7 +162,7 @@ export default function LiveStatusScreen() {
                     )}
                   </span>
                   {item.slow && (
-                    <span className="rounded bg-primary-500 px-1.5 py-0.5 text-caption font-semibold text-white">
+                    <span className="rounded bg-error-300 px-1.5 py-0.5 text-caption font-semibold text-white">
                       거의 안 팔림
                     </span>
                   )}
@@ -182,10 +172,10 @@ export default function LiveStatusScreen() {
           </section>
         )}
 
-        {/* 다음 한 수 */}
+        {/* 다음 한 수 (AI 추천) */}
         {suggestion && firstSlow && (
           <section className="mt-4 rounded-2xl border border-gray-300 px-4 py-4">
-            <p className="text-label-md font-semibold text-primary-600">다음 한 수</p>
+            <p className="text-label-md font-semibold text-primary-600">AI 추천</p>
             <p className="mt-2 text-body-lg">
               {withSubject(slowItems.length > 1 ? `${firstSlow.name} 외 ${slowItems.length - 1}개` : firstSlow.name)} 세일
               후에도 {firstSlow.sold_qty}개만 팔렸어요. 할인을 더 올려볼까요?

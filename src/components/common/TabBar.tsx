@@ -27,7 +27,7 @@ export default function TabBar() {
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
                 className={`flex h-full flex-col items-center justify-center gap-1 text-caption ${
-                  active ? "font-bold text-primary-600" : "font-medium text-gray-400"
+                  active ? "font-bold text-primary-600" : "font-medium text-gray-700"
                 }`}
               >
                 <TabIcon tab={tab.key} active={active} />
@@ -43,7 +43,7 @@ export default function TabBar() {
 
 /** 임시 아이콘. 디자인에서 아이콘이 나오면 교체 */
 function TabIcon({ tab, active }: { tab: TabKey; active: boolean }) {
-  const color = active ? "var(--color-primary-500)" : "var(--color-gray-400)";
+  const color = active ? "var(--color-primary-500)" : "var(--color-gray-700)";
   const common = {
     width: 22,
     height: 22,
@@ -66,7 +66,8 @@ function TabIcon({ tab, active }: { tab: TabKey; active: boolean }) {
     case "recommend":
       return (
         <svg {...common}>
-          <path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z" />
+          <path d="M9 11.5l3 3 8-8" />
+          <path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h11" />
         </svg>
       );
     case "records":
@@ -79,7 +80,8 @@ function TabIcon({ tab, active }: { tab: TabKey; active: boolean }) {
     case "dashboard":
       return (
         <svg {...common}>
-          <path d="M5 20V11M12 20V4M19 20v-6" />
+          <path d="M12 3 2 8l10 5 10-5z" />
+          <path d="M2 12.5 12 17.5l10-5M2 17l10 5 10-5" />
         </svg>
       );
   }

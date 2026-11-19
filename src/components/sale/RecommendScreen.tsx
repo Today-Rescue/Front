@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useNow } from "@/hooks/useNow";
 import { API_BASE_URL } from "@/lib/api";
 import { fetchRecommendation, fetchSalesRecord, fetchStoreDong } from "./api";
 import { MOCK_RECOMMENDATION } from "./mock";
 import type { Recommendation } from "./types";
-import { formatDateLabel } from "./utils";
+import { formatDateLabel, toDateKey } from "./utils";
 
 /** -0.08 → '−8%', 0.2 → '+20%' */
 const formatRate = (rate: number) => {
@@ -32,6 +33,8 @@ export default function RecommendScreen() {
   const [dong, setDong] = useState("서교동");
   const [isExample, setIsExample] = useState(true);
   const [baseClosed, setBaseClosed] = useState(true);
+  const now = useNow();
+  const today = now ? toDateKey(now) : null;
 
   useEffect(() => {
     if (!API_BASE_URL) return;
@@ -56,17 +59,28 @@ export default function RecommendScreen() {
 
   const { conditions } = rec;
 
+  /** 사유 칩 문구. 날씨·공휴일은 보정률을 붙이고(예: '비 예보 −15%'), 이월 재고는 개수로 */
+  const tagLabel = (tag: string, carryoverQty: number) => {
+    if (tag === "비 예보" && conditions.weather_change !== 0) return `${tag} ${formatRate(conditions.weather_change)}`;
+    if (tag === "공휴일" && conditions.holiday_change !== 0) return `${tag} ${formatRate(conditions.holiday_change)}`;
+    if (tag === "이월 재고" && carryoverQty > 0) return `이월 ${carryoverQty}개 반영`;
+    return tag;
+  };
+
+  // 기준일이 오늘이면 '오늘 마감 기록', 아니면 날짜로
+  const baseLabel = today && rec.base_date === today ? "오늘" : formatDateLabel(rec.base_date, false);
+
   return (
     <main className="pb-6">
-      <header className="px-5 pt-6 pb-4">
+      <header className="px-6 pt-6 pb-4">
         <h1 className="text-heading-lg font-bold">내일 생산 추천</h1>
         <p className="mt-0.5 text-body-md text-gray-700">
-          {formatDateLabel(rec.date)} · {dong} · {formatDateLabel(rec.base_date, false)} 마감 기록{" "}
+          {formatDateLabel(rec.date, true, true)} · {dong} · {baseLabel} 마감 기록{" "}
           {baseClosed ? "반영" : <span className="text-primary-600">반영 전</span>}
         </p>
       </header>
 
-      <div className="px-5">
+      <div className="px-6">
         {isExample && (
           <p className="mb-3 rounded-lg bg-gray-100 px-3 py-2 text-caption text-gray-700">
             서버에 연결되지 않아 예시 추천을 보여주고 있어요.
@@ -122,16 +136,14 @@ export default function RecommendScreen() {
                   const rate = step.change_rate;
                   const delta = i === 0 ? null : step.total - rec.steps[i - 1].total;
                   const changeText = rate !== null && rate !== undefined ? formatRate(rate) : delta !== null ? formatDelta(delta) : null;
-                  const unchanged = rate === 0 || (rate == null && delta === 0);
+                  // 늘어나면(+) 주황, 줄어들면(−) 진한 회색, 그대로면 연한 회색
+                  const sign = rate != null ? Math.sign(rate) : delta !== null ? Math.sign(delta) : 0;
+                  const changeColor = sign > 0 ? "text-primary-600" : sign < 0 ? "text-gray-800" : "text-gray-500";
                   return (
                     <li key={step.label} className="flex items-center gap-2 py-1.5 text-body-md">
                       <span className="flex-1 text-gray-800">{step.label}</span>
-                      {changeText && (
-                        <span className={`w-14 text-right ${unchanged ? "text-gray-500" : "text-primary-600"}`}>
-                          {changeText}
-                        </span>
-                      )}
-                      <span className="w-12 text-right font-semibold">{step.total}</span>
+                      {changeText && <span className={`w-14 text-right font-semibold ${changeColor}`}>{changeText}</span>}
+                      <span className="w-12 text-right text-title-sm font-bold">{step.total}</span>
                     </li>
                   );
                 })}
@@ -160,11 +172,11 @@ export default function RecommendScreen() {
                         {item.tags.map((tag) => (
                           <li
                             key={tag}
-                            className={`rounded-md px-2 py-0.5 text-caption font-medium ${
-                              isUpTag(tag) ? "bg-primary-50 text-primary-600" : "bg-white text-gray-800"
+                            className={`rounded-md bg-white px-2 py-0.5 text-caption font-semibold ${
+                              isUpTag(tag) ? "text-primary-600" : "text-gray-800"
                             }`}
                           >
-                            {tag === "이월 재고" && item.carryover_qty > 0 ? `이월 ${item.carryover_qty}개 반영` : tag}
+                            {tagLabel(tag, item.carryover_qty)}
                           </li>
                         ))}
                       </ul>

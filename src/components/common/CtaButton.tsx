@@ -71,7 +71,7 @@ export function BottomCta({
       <div aria-hidden style={{ height: height + 24 }} />
       <div
         ref={barRef}
-        className="fixed left-1/2 z-30 w-full -translate-x-1/2 bg-white px-5 pt-3 pb-5"
+        className="fixed left-1/2 z-30 w-full -translate-x-1/2 bg-white px-6 pt-3 pb-5"
         style={{
           maxWidth: APP_MAX_WIDTH,
           bottom: aboveTabBar ? `calc(${TAB_BAR_HEIGHT}px + env(safe-area-inset-bottom))` : 0,
