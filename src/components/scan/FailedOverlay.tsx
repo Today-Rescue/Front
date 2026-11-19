@@ -1,6 +1,6 @@
 "use client";
 
-import OverlayFrame, { CardIcon } from "./OverlayFrame";
+import OverlayFrame from "./OverlayFrame";
 
 type FailedOverlayProps = {
   /** notFound = 찾은 품목 없음(①-5 시안), dark = 사진이 너무 어두움(시안 없음, 같은 틀에 문구만 다르게) */
@@ -22,8 +22,7 @@ export default function FailedOverlay({ variant = "notFound", failedTwice, onGal
       label={variant === "dark" ? "사진이 너무 어두워요" : "찾은 품목이 없어요"}
       card={
         <>
-          <CardIcon />
-          <h2 className="mt-1 text-title-lg font-bold break-keep">
+          <h2 className="text-title-lg font-bold break-keep">
             {variant === "dark" ? "사진이 너무 어두워요" : "찾은 품목이 없어요"}
           </h2>
           <p className="mt-1 text-caption leading-4 break-keep text-gray-700">

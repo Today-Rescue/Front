@@ -40,21 +40,12 @@ export default function PurposeSheet({ open, recommended, notifyTime = "18:00", 
               <button
                 type="button"
                 onClick={() => onSelect(option.purpose)}
-                className={`flex w-full items-center gap-3.5 rounded-2xl border p-4 text-left transition-colors ${
+                className={`flex w-full items-center rounded-2xl border p-4 text-left transition-colors ${
                   isRecommended
                     ? "border-primary-500 bg-primary-50 active:bg-primary-100"
                     : "border-gray-300 bg-white active:bg-gray-100"
                 }`}
               >
-                {/* 아이콘 자리: 디자인에서 아이콘이 나오면 안쪽 span을 아이콘으로 교체 */}
-                <span
-                  className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${
-                    isRecommended ? "bg-white" : "bg-gray-100"
-                  }`}
-                >
-                  <span aria-hidden className={`size-6 rounded-md ${isRecommended ? "bg-primary-300/60" : "bg-gray-500"}`} />
-                </span>
-
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
                     <span className="text-title-sm font-bold">{option.title}</span>

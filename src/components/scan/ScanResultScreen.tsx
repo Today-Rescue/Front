@@ -77,9 +77,9 @@ export default function ScanResultScreen({
 
   return (
     <>
-      <HeaderBar title="남은 재고 확인" onBack={onBack} step={{ current: 1, total: 2 }} />
+      <HeaderBar title="남은 재고 확인" onBack={onBack} />
 
-      <main className="px-5 pt-2">
+      <main className="px-6 pt-2">
         <PhotoBanner label={photoLabel} photoUrl={photoUrl} heightClass="h-32" onRetake={onRetake} />
 
         <h2 className="mt-5 text-heading-sm font-bold">총 {total}개의 재고를 확인했어요</h2>
@@ -93,8 +93,8 @@ export default function ScanResultScreen({
             const style = SUMMARY_STYLE[level];
             return (
               <div key={level} className={`rounded-2xl px-3 py-2.5 ${style.card}`}>
-                <p className={`text-label-md font-bold ${style.labelColor}`}>{style.label}</p>
-                <p className="mt-0.5 text-title-lg font-bold whitespace-nowrap">
+                <p className={`text-title-lg font-bold ${style.labelColor}`}>{style.label}</p>
+                <p className="mt-0.5 text-label-md font-medium whitespace-nowrap text-gray-700">
                   {group.length}종 · {count}개
                 </p>
               </div>
@@ -143,10 +143,10 @@ export default function ScanResultScreen({
   );
 }
 
-/** 하단 고정: 수량 확정 후 판매 방법 선택 (일괄 할인 / 세트 구성) */
+/** 하단 고정: 수량 확정 후 판매 방법 선택 (일괄 할인 / 묶음 세트 구성) */
 function SellMethodBar({ onSelect, disabled, error }: { onSelect: (method: SellMethod) => void; disabled: boolean; error?: string }) {
   const barRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState(170);
+  const [height, setHeight] = useState(140);
 
   // 콘텐츠가 하단 영역에 가리지 않도록 같은 높이만큼 빈 공간을 깔아 둠
   useLayoutEffect(() => {
@@ -162,7 +162,7 @@ function SellMethodBar({ onSelect, disabled, error }: { onSelect: (method: SellM
       <div aria-hidden style={{ height: height + 24 }} />
       <div
         ref={barRef}
-        className="fixed bottom-0 left-1/2 z-30 w-full -translate-x-1/2 bg-white px-5 pt-4"
+        className="fixed bottom-0 left-1/2 z-30 w-full -translate-x-1/2 bg-white px-6 pt-4"
         style={{ maxWidth: APP_MAX_WIDTH, paddingBottom: "calc(20px + env(safe-area-inset-bottom))" }}
       >
         <p className="text-label-md font-bold">수량을 확정하고 어떻게 팔까요?</p>
@@ -172,27 +172,18 @@ function SellMethodBar({ onSelect, disabled, error }: { onSelect: (method: SellM
             type="button"
             onClick={() => onSelect("discount")}
             disabled={disabled}
-            className="flex-1 rounded-[20px] bg-primary-500 px-2 py-4 text-center text-white transition-colors active:bg-primary-600 disabled:opacity-60"
+            className="h-14 flex-1 rounded-full bg-primary-500 px-2 text-label-lg font-bold text-white transition-colors active:bg-primary-600 disabled:opacity-60"
           >
-            <span className="flex items-center justify-center gap-1.5 text-title-lg font-bold">
-              {/* 아이콘 자리: 디자인에서 아이콘이 나오면 교체 */}
-              <span aria-hidden className="size-5 rounded-md bg-white/30" />
-              일괄 할인
-            </span>
-            <span className="mt-0.5 block text-caption text-white/90">위험·주의 품목 한 번에</span>
+            일괄 할인
           </button>
 
           <button
             type="button"
             onClick={() => onSelect("bundle")}
             disabled={disabled}
-            className="flex-1 rounded-[20px] bg-primary-100 px-2 py-4 text-center text-primary-700 transition-colors active:bg-primary-200 disabled:opacity-60"
+            className="h-14 flex-1 rounded-full bg-primary-100 px-2 text-label-lg font-bold text-primary-700 transition-colors active:bg-primary-200 disabled:opacity-60"
           >
-            <span className="flex items-center justify-center gap-1.5 text-title-lg font-bold">
-              <span aria-hidden className="size-5 rounded-md bg-primary-700/20" />
-              세트 구성
-            </span>
-            <span className="mt-0.5 block text-caption">남는 빵 묶어 팔기</span>
+            묶음 세트 구성
           </button>
         </div>
 

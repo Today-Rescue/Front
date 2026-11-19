@@ -73,7 +73,7 @@ export default function BottomSheet({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="relative w-full rounded-t-3xl bg-white px-5 pt-6 text-black outline-none transition-transform duration-200 motion-reduce:transition-none starting:translate-y-full"
+        className="relative w-full rounded-t-3xl bg-white px-6 pt-6 text-black outline-none transition-transform duration-200 motion-reduce:transition-none starting:translate-y-full"
         style={{ maxWidth: APP_MAX_WIDTH, paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
       >
         {showHandle && <div aria-hidden className="mx-auto mb-3 h-1 w-10 rounded-full bg-gray-300" />}

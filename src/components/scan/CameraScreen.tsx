@@ -23,7 +23,7 @@ type CameraScreenProps = {
   notifyTime?: string;
   /** 매대 칸 수(썸네일 칸 수). 서버에서 오는 값이 정해지면 연결 */
   maxShelves?: number;
-  /** X 클릭. open이면 오전-2, close면 ①-1로 돌아가도록 부모가 처리 */
+  /** ‹ 클릭. open이면 오전-2, close면 ①-1로 돌아가도록 부모가 처리 */
   onClose: () => void;
   /** '바꾸기' 시트에서 지금과 다른 목적을 골랐을 때 */
   onChangePurpose: (purpose: ScanPurpose) => void;
@@ -53,7 +53,7 @@ function makePhoto(blob: Blob): ShotPhoto {
 
 /**
  * 촬영 화면 (오전-3, ①-2 공용)
- * - 위: 닫기, 안내 알약, 플래시
+ * - 위: 뒤로 가기, 안내 알약, 플래시
  * - 가운데: 촬영 가이드 틀, 그 아래 밝기·흔들림 알약
  * - 아래: 목적 바꾸기, 저장/분석, 매대 썸네일, 갤러리, 촬영 버튼
  * 카메라를 못 쓰면 촬영 버튼이 기기 카메라 앱(사진 선택)으로 바뀜
@@ -139,19 +139,19 @@ export default function CameraScreen({
         className={`absolute inset-0 h-full w-full object-cover ${cameraReady ? "" : "hidden"}`}
       />
 
-      {/* 상단: 닫기 · 안내 알약 · 플래시 */}
+      {/* 상단: 뒤로 가기 · 안내 알약 · 플래시 */}
       <div
-        className="relative z-10 flex items-center gap-2 px-4"
+        className="relative z-10 flex items-center gap-2 px-6"
         style={{ paddingTop: "calc(12px + env(safe-area-inset-top))" }}
       >
         <button
           type="button"
           onClick={onClose}
-          aria-label="닫기"
+          aria-label="뒤로 가기"
           className="flex size-11 shrink-0 items-center justify-center rounded-full bg-white text-black active:bg-gray-200"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-            <path d="M6 6l12 12M18 6L6 18" />
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M15 5l-7 7 7 7" />
           </svg>
         </button>
 
@@ -176,7 +176,7 @@ export default function CameraScreen({
       </div>
 
       {/* 촬영 가이드 틀 */}
-      <div className="relative z-10 min-h-0 flex-1 px-4 pt-6">
+      <div className="relative z-10 min-h-0 flex-1 px-6 pt-6">
         <div className="relative h-full rounded-2xl border-2 border-dashed border-white/90">
           {status === "starting" && (
             <p className="absolute inset-0 flex items-center justify-center text-body-md text-white/70">카메라를 켜는 중이에요.</p>
@@ -201,7 +201,7 @@ export default function CameraScreen({
 
       {/* 하단 조작부 */}
       <div
-        className={`relative z-10 ${PANEL_BG} px-5 pt-4`}
+        className={`relative z-10 ${PANEL_BG} px-6 pt-4`}
         style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
       >
         <div className="flex items-center justify-between gap-2">
@@ -255,11 +255,7 @@ export default function CameraScreen({
                   aria-label={`매대 ${n} 촬영 중`}
                   className="flex size-16 items-center justify-center rounded-2xl border-2 border-primary-500 text-center text-label-md leading-tight font-bold text-primary-300"
                 >
-                  <span>
-                    매대 {n}
-                    <br />
-                    찍는 중
-                  </span>
+                  매대 {n}
                 </li>
               );
             }
