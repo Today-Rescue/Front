@@ -51,13 +51,12 @@ export default function ClosingSection({
   return (
     <>
       {/* 3. 매대 촬영 버튼 */}
-      <div className="mx-5 mt-4">
+      <div className="mx-6 mt-4">
         <Link
           href={ROUTES.scan}
-          className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary-500 text-label-lg font-semibold text-white active:bg-primary-600"
+          className="flex h-16 w-full items-center justify-center rounded-3xl bg-primary-500 text-title-lg font-semibold text-white active:bg-primary-600"
         >
-          <CameraIcon />
-          지금 매대 촬영하고 남은 수량 파악하기
+          남은 수량 파악하기
         </Link>
         <p className="mt-2 text-center text-caption text-gray-600">
           {lastScan
@@ -67,7 +66,7 @@ export default function ClosingSection({
       </div>
 
       {/* 4. 스캔 결과 · 바로 팔기 */}
-      <section className="mt-7 px-5">
+      <section className="mt-7 px-6">
         <h2 className="text-title-lg font-bold">스캔 결과 · 바로 팔기</h2>
 
         {lastScan ? (
@@ -93,7 +92,7 @@ export default function ClosingSection({
             {saleLive ? (
               <Link
                 href={ROUTES.saleStatus}
-                className="mt-4 flex h-14 w-full items-center justify-center rounded-xl bg-primary-500 text-label-lg font-semibold text-white"
+                className="mt-4 flex h-14 w-full items-center justify-center rounded-3xl bg-primary-500 text-label-lg font-semibold text-white"
               >
                 마켓 게시 중 · 현황 보기
               </Link>
@@ -102,7 +101,7 @@ export default function ClosingSection({
                 type="button"
                 onClick={startBulkSale}
                 disabled={busy !== null}
-                className="mt-4 h-14 w-full rounded-xl bg-primary-500 text-label-lg font-semibold text-white active:bg-primary-600 disabled:opacity-60"
+                className="mt-4 h-14 w-full rounded-3xl bg-primary-500 text-label-lg font-semibold text-white active:bg-primary-600 disabled:opacity-60"
               >
                 {busy === "sale" ? "마켓에 올리는 중…" : `일괄 ${lastScan.recommendedDiscount}% 마감 세일 시작하기`}
               </button>
@@ -111,7 +110,6 @@ export default function ClosingSection({
             <div className="mt-3 flex items-center gap-2 text-caption text-gray-700">
               <span>올리는 곳</span>
               <span className="flex items-center gap-1 rounded-full border border-gray-300 bg-white px-2.5 py-1 font-medium text-black">
-                <span className="size-2.5 rounded-full bg-success-100" aria-hidden />
                 오늘구조대 마켓
               </span>
               <Link href={ROUTES.saleDiscount} className="ml-auto font-medium text-primary-600 underline underline-offset-2">
@@ -128,13 +126,12 @@ export default function ClosingSection({
         )}
       </section>
 
-      {error && <p className="mx-5 mt-3 text-center text-caption text-error-300">{error}</p>}
+      {error && <p className="mx-6 mt-3 text-center text-caption text-error-300">{error}</p>}
 
       {/* 5. AI 세트 추천 */}
       {lastScan && bundle && (
-        <section className="mx-5 mt-4 rounded-2xl border border-primary-100 bg-primary-50 p-5">
-          <p className="flex items-center gap-1.5 text-label-md font-semibold text-primary-600">
-            <span className="size-4 rounded bg-primary-300" aria-hidden />
+        <section className="mx-6 mt-4 rounded-2xl border border-primary-100 bg-primary-50 p-5">
+          <p className="text-label-md font-semibold text-primary-600">
             AI 세트 추천 · 오늘의 추천 묶음
           </p>
 
@@ -165,7 +162,7 @@ export default function ClosingSection({
           {bundleOnSale ? (
             <Link
               href={ROUTES.saleStatus}
-              className="mt-4 flex h-12 w-full items-center justify-center rounded-xl bg-white text-label-md font-semibold text-primary-600"
+              className="mt-4 flex h-12 w-full items-center justify-center rounded-full bg-white text-label-md font-semibold text-primary-600"
             >
               ● 판매 중 · 현황 보기
             </Link>
@@ -173,7 +170,7 @@ export default function ClosingSection({
             <div className="mt-4 flex gap-2">
               <Link
                 href={ROUTES.saleBundle}
-                className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-200 bg-white text-label-md font-semibold"
+                className="flex h-12 flex-1 items-center justify-center rounded-full border border-gray-200 bg-white text-label-md font-semibold"
               >
                 구성 수정
               </Link>
@@ -181,7 +178,7 @@ export default function ClosingSection({
                 type="button"
                 onClick={acceptBundle}
                 disabled={busy !== null}
-                className="h-12 flex-[1.4] rounded-xl bg-primary-100 text-label-md font-semibold text-primary-600 active:bg-primary-200 disabled:opacity-60"
+                className="h-12 flex-[1.4] rounded-full bg-primary-500 text-label-md font-semibold text-white active:bg-primary-600 disabled:opacity-60"
               >
                 {busy === "bundle" ? "올리는 중…" : "수락 및 판매"}
               </button>
@@ -193,11 +190,3 @@ export default function ClosingSection({
   );
 }
 
-function CameraIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
-      <circle cx="12" cy="13.5" r="3.5" />
-    </svg>
-  );
-}

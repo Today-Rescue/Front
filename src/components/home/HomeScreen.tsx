@@ -54,7 +54,7 @@ export default function HomeScreen(options: HomeScreenOptions) {
   // 서버에서 불러오는 중
   if (!data) {
     return (
-      <main className="px-5 pt-6" aria-busy>
+      <main className="px-6 pt-6" aria-busy>
         <div className="h-8 w-40 animate-pulse rounded-lg bg-gray-100" />
         <div className="mt-5 h-36 animate-pulse rounded-2xl bg-gray-100" />
         <div className="mt-4 h-16 animate-pulse rounded-2xl bg-gray-100" />
@@ -77,7 +77,7 @@ export default function HomeScreen(options: HomeScreenOptions) {
     <main className="pb-8">
       <HomeHeader data={data} />
       {failed && (
-        <p className="mx-5 mb-3 rounded-lg bg-gray-100 px-3 py-2 text-caption text-gray-600">
+        <p className="mx-6 mb-3 rounded-lg bg-gray-100 px-3 py-2 text-caption text-gray-600">
           서버에 연결하지 못해 예시 데이터를 보여주고 있어요.
         </p>
       )}

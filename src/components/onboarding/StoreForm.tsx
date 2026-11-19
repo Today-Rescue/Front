@@ -9,6 +9,7 @@ import { useSlowFlag } from "@/hooks/useSlowFlag";
 import { api } from "@/lib/api";
 import { createStore, placeFromLocation, searchDong, type Place } from "@/lib/onboarding";
 import { ROUTES } from "@/lib/routes";
+import { CheckSquareIcon, PinIcon } from "@/components/home/icons";
 import { ErrorNote, FieldLabel, PageIntro, inputClass } from "./fields";
 
 /** 0-1 가게 정보 · 위치 */
@@ -98,7 +99,7 @@ export default function StoreForm() {
         이후에는 같은 위치의 날씨를 불러와요.
       </PageIntro>
 
-      <div className="mt-7 px-5">
+      <div className="mt-7 px-6">
         <FieldLabel required>가게명</FieldLabel>
         <input
           className={inputClass}
@@ -109,14 +110,11 @@ export default function StoreForm() {
         />
       </div>
 
-      <section className="mx-5 mt-6 rounded-2xl bg-gray-100 p-4">
+      <section className="mx-6 mt-6 rounded-2xl bg-gray-100 p-4">
         <FieldLabel required>위치정보</FieldLabel>
 
         <label className="flex h-12 items-center gap-2 rounded-xl bg-white px-3">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-500)" strokeWidth="2" strokeLinecap="round" aria-hidden>
-            <circle cx="11" cy="11" r="7" />
-            <path d="M20 20l-3.5-3.5" />
-          </svg>
+          <PinIcon size={22} color="var(--color-black)" />
           <input
             className="h-full flex-1 bg-transparent text-body-lg outline-none placeholder:text-gray-500"
             placeholder="동 이름으로 검색"
@@ -129,12 +127,8 @@ export default function StoreForm() {
           type="button"
           onClick={findMyLocation}
           disabled={locating}
-          className="mt-2 flex h-12 w-full items-center justify-center gap-1.5 rounded-xl bg-primary-50 text-label-md font-semibold text-primary-600 disabled:opacity-60"
+          className="mt-2 flex h-12 w-full items-center justify-center rounded-xl bg-primary-500 text-label-md font-semibold text-white active:bg-primary-600 disabled:opacity-60"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-          </svg>
           {locating ? "위치 찾는 중…" : "현재 위치로 찾기"}
         </button>
 
@@ -156,13 +150,7 @@ export default function StoreForm() {
                       <span className="block text-title-sm font-semibold">{p.dong}</span>
                       <span className="block text-caption text-gray-600">{p.address}</span>
                     </span>
-                    {selected && (
-                      <span className="flex size-6 items-center justify-center rounded-full bg-primary-500" aria-hidden>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M5 12l5 5L19 8" />
-                        </svg>
-                      </span>
-                    )}
+                    {selected && <CheckSquareIcon size={26} color="var(--color-primary-500)" />}
                   </button>
                 </li>
               );

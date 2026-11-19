@@ -20,22 +20,18 @@ export default function ModeBanner({
   const open = clockToMinutes(store.openTime);
   const close = clockToMinutes(store.closeTime);
   const notify = close - store.notifyBeforeHours * 60;
-  const notifyClock = minutesToClock(notify);
 
   const target = mode === "morning" ? notify : close;
   const left = target - nowMinutes;
   const progress = Math.min(1, Math.max(0, (nowMinutes - open) / (close - open)));
 
   return (
-    <section className="mx-5 rounded-2xl bg-primary-50 px-5 pt-4 pb-4">
+    <section className="mx-6 rounded-2xl bg-primary-50 px-5 pt-4 pb-4">
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-label-md font-semibold text-primary-600">
-          <span className="size-4 rounded bg-primary-300" aria-hidden />
+        <span className="text-label-md font-semibold text-primary-600">
           {mode === "morning" ? "오전 판매 모드" : "오후 마감 모드"}
         </span>
-        <span className="text-caption text-gray-700">
-          {mode === "morning" ? `${notifyClock} 마감 알림` : `${store.closeTime} 마감`}
-        </span>
+        {mode === "closing" && <span className="text-caption text-gray-700">{store.closeTime} 마감</span>}
       </div>
 
       <p className="mt-2 text-title-lg font-semibold">
@@ -55,11 +51,7 @@ export default function ModeBanner({
           </>
         )}
       </p>
-      <p className="mt-0.5 text-body-md text-gray-700">
-        {mode === "morning"
-          ? `${notifyClock}에 남은 재고를 찍으라고 알려드릴게요.`
-          : "남은 재고를 확인해 볼까요?"}
-      </p>
+      {mode === "closing" && <p className="mt-0.5 text-body-md text-gray-700">남은 재고를 확인해 볼까요?</p>}
 
       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-primary-200" role="progressbar" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>
         <div className="h-full rounded-full bg-primary-500" style={{ width: `${progress * 100}%` }} />

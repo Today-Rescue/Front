@@ -53,14 +53,14 @@ export default function HoursForm() {
       </PageIntro>
 
       {/* 3. 오픈 · 마감 */}
-      <div className="mt-7 grid grid-cols-2 gap-3 px-5">
+      <div className="mt-7 grid grid-cols-2 gap-3 px-6">
         <TimeField label="오픈" value={draft.openTime} onChange={(openTime) => update({ openTime })} />
         <TimeField label="마감" value={draft.closeTime} onChange={(closeTime) => update({ closeTime })} />
       </div>
       {!validTime && <ErrorNote>마감 시간은 오픈 시간보다 늦어야 해요.</ErrorNote>}
 
       {/* 4. 쉬는 날 */}
-      <div className="mt-7 px-5">
+      <div className="mt-7 px-6">
         <FieldLabel>쉬는 날</FieldLabel>
         <div className="grid grid-cols-7 gap-1.5">
           {DAYS.map((d) => (
@@ -72,7 +72,7 @@ export default function HoursForm() {
       </div>
 
       {/* 5. 마감 알림 */}
-      <div className="mt-7 px-5">
+      <div className="mt-7 px-6">
         <FieldLabel>마감 알림</FieldLabel>
         <div className="grid grid-cols-3 gap-2">
           {([1, 2, 3] as const).map((h) => (

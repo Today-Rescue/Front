@@ -33,7 +33,7 @@ export default function WeeklyWasteChart({
   const h = (n: number) => Math.max(n > 0 ? 4 : 0, Math.round((n / max) * BAR_AREA));
 
   return (
-    <section className="mx-5 mt-4 rounded-2xl bg-gray-100 px-5 pt-5 pb-5">
+    <section className="mx-6 mt-4 rounded-2xl bg-gray-100 px-5 pt-5 pb-5">
       <div className="flex items-center justify-between">
         <h2 className="text-title-sm font-bold">요일별 폐기 수량</h2>
         <div className="flex items-center gap-3 text-caption text-gray-700">

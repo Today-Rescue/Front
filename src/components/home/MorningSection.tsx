@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
+import { CameraIcon } from "./icons";
 import { formatAmPm } from "@/lib/time";
 import type { HomeData } from "@/types/home";
 
@@ -12,14 +13,9 @@ export default function MorningSection({ data }: { data: HomeData }) {
   return (
     <>
       {/* 3. 최초 진열 상태 */}
-      <div className="mx-5 mt-4">
+      <div className="mx-6 mt-4">
         {firstDisplay ? (
-          <div className="flex items-center gap-3 rounded-2xl border border-gray-300 bg-white px-4 py-4">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-500" aria-hidden>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12l5 5L19 8" />
-              </svg>
-            </span>
+          <div className="flex items-center gap-3 rounded-2xl border border-gray-300 bg-white py-3 pr-3 pl-5">
             <div className="min-w-0 flex-1">
               <p className="text-title-sm font-semibold">최초 진열 기록 완료</p>
               <p className="text-caption text-gray-700">
@@ -27,7 +23,10 @@ export default function MorningSection({ data }: { data: HomeData }) {
                 {firstDisplay.shelves ? ` · 매대 ${firstDisplay.shelves}곳` : ""} · {firstDisplay.count}개
               </p>
             </div>
-            <Link href={ROUTES.scan} className="shrink-0 text-label-md font-semibold text-primary-600">
+            <Link
+              href={ROUTES.scan}
+              className="flex h-11 shrink-0 items-center rounded-xl bg-primary-500 px-4 text-label-md font-semibold text-white active:bg-primary-600"
+            >
               다시 찍기
             </Link>
           </div>
@@ -35,8 +34,9 @@ export default function MorningSection({ data }: { data: HomeData }) {
           <>
             <Link
               href={ROUTES.scan}
-              className="flex h-14 w-full items-center justify-center rounded-xl bg-primary-500 text-label-lg font-semibold text-white active:bg-primary-600"
+              className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary-500 text-label-lg font-semibold text-white active:bg-primary-600"
             >
+              <CameraIcon />
               진열된 매대 찍고 오늘 만든 수량 기록
             </Link>
             <p className="mt-2 text-center text-caption text-gray-600">
@@ -47,7 +47,7 @@ export default function MorningSection({ data }: { data: HomeData }) {
       </div>
 
       {/* 4. 오늘 생산 */}
-      <section className="mt-7 px-5">
+      <section className="mt-7 px-6">
         <h2 className="text-title-lg font-bold">오늘 생산</h2>
 
         <div className="mt-3 rounded-2xl bg-gray-100 px-5 pt-5 pb-5">
@@ -98,15 +98,15 @@ export default function MorningSection({ data }: { data: HomeData }) {
           <div className="mt-4 flex gap-2">
             <Link
               href={ROUTES.productionConfirm}
-              className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-400 bg-white text-label-md font-semibold"
+              className="flex h-12 flex-1 items-center justify-center rounded-full border border-gray-400 bg-white text-label-md font-semibold"
             >
               수량 고치기
             </Link>
             <Link
               href={ROUTES.productionAdd}
-              className="flex h-12 flex-[1.4] items-center justify-center gap-1.5 rounded-xl border border-gray-400 bg-white text-label-md font-semibold"
+              className="flex h-12 flex-[1.4] items-center justify-center rounded-full bg-primary-500 text-label-md font-semibold text-white active:bg-primary-600"
             >
-              <span aria-hidden className="text-primary-500">＋</span>더 구운 빵 기록
+              더 구운 빵 기록
             </Link>
           </div>
           <p className="mt-3 text-caption text-gray-600">
