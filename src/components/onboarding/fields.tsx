@@ -2,7 +2,7 @@
 
 export function PageIntro({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <div className="px-5 pt-4">
+    <div className="px-6 pt-4">
       <h2 className="text-heading-md font-bold">{title}</h2>
       {children && <p className="mt-1.5 text-body-md text-gray-700">{children}</p>}
     </div>
@@ -51,13 +51,7 @@ export function Chip({
 
 export function InfoNote({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-xl bg-primary-50 px-4 py-3.5 text-body-md text-gray-900">
-      <svg className="mt-0.5 shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-500)" strokeWidth="2" strokeLinecap="round" aria-hidden>
-        <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-        <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
-      </svg>
-      <span>{children}</span>
-    </div>
+    <div className="rounded-xl bg-primary-50 px-4 py-3.5 text-body-md text-gray-900">{children}</div>
   );
 }
 

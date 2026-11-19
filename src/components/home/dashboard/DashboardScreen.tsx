@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSlowFlag } from "@/hooks/useSlowFlag";
-import { MOCK_DASHBOARD, fetchClosedDays, fetchDashboard, formatWeekRange } from "@/lib/dashboard";
+import { MOCK_DASHBOARD, fetchClosedDays, fetchDashboard } from "@/lib/dashboard";
 import { ROUTES } from "@/lib/routes";
 import type { DashboardResponse } from "@/types/dashboard";
 import WeeklyWasteChart from "./WeeklyWasteChart";
@@ -50,7 +50,7 @@ export default function DashboardScreen({ week, mockOnly = false }: { week?: str
 
   if (!data) {
     return (
-      <main className="px-5 pt-6">
+      <main className="px-6 pt-6">
         <h1 className="text-heading-lg font-bold">이번 주 재고 리포트</h1>
         <div className="mt-4 space-y-3" aria-busy>
           <div className="h-32 animate-pulse rounded-2xl bg-gray-100" />
@@ -68,11 +68,8 @@ export default function DashboardScreen({ week, mockOnly = false }: { week?: str
   return (
     <main className="pb-8">
       {/* 1. 제목 */}
-      <header className="px-5 pt-6 pb-4">
+      <header className="px-6 pt-6 pb-4">
         <h1 className="text-heading-lg font-bold">이번 주 재고 리포트</h1>
-        <p className="mt-0.5 text-body-md text-gray-700">
-          {formatWeekRange(data.week_start, data.week_end)} · 지난주와 비교
-        </p>
         {failed && (
           <p className="mt-2 rounded-lg bg-gray-100 px-3 py-2 text-caption text-gray-600">
             서버에 연결하지 못해 예시 데이터를 보여주고 있어요.
@@ -81,7 +78,7 @@ export default function DashboardScreen({ week, mockOnly = false }: { week?: str
       </header>
 
       {/* 2. 폐기 카드 */}
-      <section className="mx-5 rounded-2xl bg-primary-50 px-5 py-5">
+      <section className="mx-6 rounded-2xl bg-primary-50 px-5 py-5">
         <div className="flex items-center justify-between">
           <p className="text-body-md text-gray-700">이번 주 폐기 수량</p>
           {waste.change_rate !== null && (
@@ -99,7 +96,7 @@ export default function DashboardScreen({ week, mockOnly = false }: { week?: str
           {waste.this_week}
           <span className="text-heading-md">개</span>
         </p>
-        <p className="mt-1 text-body-md text-gray-700">
+        <p className="mt-1 break-keep text-body-md text-gray-700">
           지난주 {waste.last_week}개 → 이번 주 {waste.this_week}개
           {waste.reduced > 0 && ` · ${waste.reduced}개를 덜 버렸어요`}
           {waste.reduced < 0 && ` · ${-waste.reduced}개를 더 버렸어요`}
@@ -107,7 +104,7 @@ export default function DashboardScreen({ week, mockOnly = false }: { week?: str
       </section>
 
       {/* 3. 요약 카드 2개 */}
-      <div className="mx-5 mt-3 grid grid-cols-2 gap-3">
+      <div className="mx-6 mt-3 grid grid-cols-2 gap-3">
         <div className="rounded-2xl bg-primary-50 px-4 py-4">
           <p className="text-caption font-medium text-primary-600">할인으로 살린 빵</p>
           <p className="mt-1 text-heading-md font-bold text-primary-600">{discount.sold_qty}개</p>
@@ -131,7 +128,7 @@ export default function DashboardScreen({ week, mockOnly = false }: { week?: str
       />
 
       {/* 5. 자주 남는 빵 */}
-      <section className="mt-7 px-5">
+      <section className="mt-7 px-6">
         <div className="flex items-end justify-between">
           <h2 className="text-title-lg font-bold">자주 남는 빵</h2>
           <span className="text-caption text-gray-600">
@@ -155,7 +152,7 @@ export default function DashboardScreen({ week, mockOnly = false }: { week?: str
                   {it.days.map((d) => (
                     <span
                       key={d.date}
-                      className={`h-1.5 flex-1 rounded-full ${d.left ? "bg-error-300" : "bg-gray-300"}`}
+                      className={`h-2.5 flex-1 rounded-full ${d.left ? "bg-error-300" : "bg-gray-300"}`}
                       title={`${d.date} ${d.left ? "남음" : "완판"}`}
                     />
                   ))}
@@ -169,7 +166,7 @@ export default function DashboardScreen({ week, mockOnly = false }: { week?: str
 
       {/* 6. 다음 주 제안 */}
       {suggestion && (
-        <section className="mx-5 mt-4 rounded-2xl border border-primary-100 bg-primary-50 px-5 py-5">
+        <section className="mx-6 mt-4 rounded-2xl border border-primary-100 bg-primary-50 px-5 py-5">
           <p className="text-label-md font-semibold text-primary-600">다음 주 이렇게 해볼까요</p>
           <p className="mt-2 text-body-lg">{suggestion.message}</p>
           {suggestion.type === "reduce_production" && (

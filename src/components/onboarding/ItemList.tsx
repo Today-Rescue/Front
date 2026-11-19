@@ -7,6 +7,7 @@ import { BottomCta, CtaButton } from "@/components/common/CtaButton";
 import { useOnboardingDraft } from "@/hooks/useOnboardingDraft";
 import { SHELF_LIFE_OPTIONS } from "@/lib/onboarding";
 import { ROUTES } from "@/lib/routes";
+import { ChevronRightIcon } from "@/components/home/icons";
 import { formatNumber } from "@/lib/time";
 import { PageIntro } from "./fields";
 
@@ -26,7 +27,7 @@ export default function ItemList() {
       <HeaderBar backHref={ROUTES.onboardingHours} progress={{ current: 3, total: 3 }} />
       <PageIntro title="판매하는 품목을 추가해주세요.">품목을 누르면 판매가와 보관 기간을 수정해요.</PageIntro>
 
-      <div className="mt-6 px-5">
+      <div className="mt-6 px-6">
         {!ready ? null : items.length === 0 ? (
           <Link
             href={ROUTES.onboardingItemNew}
@@ -40,21 +41,21 @@ export default function ItemList() {
               <li key={it.localId}>
                 <Link
                   href={`${ROUTES.onboardingItemNew}?id=${it.localId}`}
-                  className="flex items-center gap-2 rounded-2xl bg-gray-100 px-4 py-4"
+                  className="flex items-center gap-2 rounded-2xl bg-gray-100 py-3 pr-3 pl-4"
                 >
-                  <span className="min-w-0 flex-1 truncate">
-                    <b className="text-title-sm font-semibold">{it.name}</b>
-                    <span className="ml-2 text-caption text-gray-600">판매가 ₩{formatNumber(it.price)}</span>
+                  <span className="flex min-w-0 flex-1 items-center gap-2.5">
+                    <b className="truncate text-title-sm font-semibold">{it.name}</b>
+                    <span className="shrink-0 text-caption leading-tight text-gray-600">
+                      판매가
+                      <br />₩{formatNumber(it.price)}
+                    </span>
                   </span>
                   <span className="shrink-0 rounded-md bg-white px-2 py-1 text-label-md font-semibold">
                     {SHELF_LIFE_OPTIONS.find((o) => o.value === it.shelfLife)?.tag}
                   </span>
-                  {it.imagePreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- 사용자가 고른 사진 미리보기
-                    <img src={it.imagePreview} alt="" className="size-7 shrink-0 rounded-md object-cover" />
-                  ) : (
-                    <span className="size-7 shrink-0 rounded-md bg-gray-300" aria-hidden />
-                  )}
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gray-300">
+                    <ChevronRightIcon color="var(--color-black)" />
+                  </span>
                 </Link>
               </li>
             ))}

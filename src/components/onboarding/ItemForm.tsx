@@ -10,6 +10,7 @@ import { SHELF_LIFE_OPTIONS, createItem, updateItem, type DraftItem, type ShelfL
 import { ROUTES } from "@/lib/routes";
 import { formatNumber } from "@/lib/time";
 import { Chip, ErrorNote, FieldLabel, inputClass } from "./fields";
+import { CameraIcon } from "../home/icons";
 
 /** 0-4 품목 추가 / 수정 (editId 가 있으면 수정) */
 export default function ItemForm({ editId }: { editId?: string }) {
@@ -89,7 +90,7 @@ export default function ItemForm({ editId }: { editId?: string }) {
       <button
         type="button"
         onClick={() => fileRef.current?.click()}
-        className="mx-5 mt-2 flex w-[calc(100%-40px)] items-center gap-3 rounded-2xl bg-gray-100 px-5 py-4 text-left"
+        className="mx-6 mt-2 flex w-[calc(100%-48px)] items-center gap-3 rounded-2xl bg-gray-100 px-5 py-4 text-left"
       >
         <span className="flex-1">
           <span className="block text-title-sm font-semibold">제품 이미지 등록</span>
@@ -104,9 +105,7 @@ export default function ItemForm({ editId }: { editId?: string }) {
           <img src={image} alt="선택한 제품 사진" className="size-14 rounded-xl object-cover" />
         ) : (
           <span className="flex size-10 items-center justify-center rounded-xl bg-gray-300" aria-hidden>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+            <CameraIcon size={20} color="white" />
           </span>
         )}
       </button>
@@ -114,13 +113,13 @@ export default function ItemForm({ editId }: { editId?: string }) {
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => pickImage(e.target.files?.[0])} />
 
       {/* 3. 품목명 */}
-      <div className="mt-7 px-5">
+      <div className="mt-7 px-6">
         <FieldLabel required>품목명</FieldLabel>
         <input className={inputClass} placeholder="예: 버터롤" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
 
       {/* 4. 판매가 */}
-      <div className="mt-6 px-5">
+      <div className="mt-6 px-6">
         <FieldLabel required>판매가</FieldLabel>
         <label className="flex h-14 items-center rounded-xl bg-gray-100 px-4 focus-within:ring-2 focus-within:ring-primary-300">
           <input
@@ -136,7 +135,7 @@ export default function ItemForm({ editId }: { editId?: string }) {
       </div>
 
       {/* 5. 보관 기간 */}
-      <div className="mt-6 px-5">
+      <div className="mt-6 px-6">
         <FieldLabel required>보관 기간</FieldLabel>
         <div className="grid grid-cols-3 gap-2">
           {SHELF_LIFE_OPTIONS.map((o) => (
