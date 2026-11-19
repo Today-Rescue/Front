@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { CtaButton } from "@/components/common/CtaButton";
 import BottomSheet from "./BottomSheet";
-import Stepper from "./Stepper";
 import type { ProductionItem } from "./types";
 
 type ExtraProductionSheetProps = {
@@ -62,7 +61,7 @@ function ExtraProductionForm({
                   className={`h-12 w-full truncate rounded-xl border-2 px-2 text-body-md transition-colors ${
                     isSelected
                       ? "border-primary-500 bg-primary-50 font-bold text-black"
-                      : "border-gray-200 bg-white font-medium text-gray-800 active:bg-gray-100"
+                      : "border-gray-100 bg-gray-100 font-medium text-gray-800 active:bg-gray-200"
                   }`}
                 >
                   {item.name}
@@ -75,9 +74,7 @@ function ExtraProductionForm({
 
       <section aria-label="수량" className="mt-6">
         <p className="text-label-md font-semibold">수량</p>
-        <div className="mt-3 flex justify-center">
-          <Stepper value={quantity} onChange={setQuantity} min={1} size="lg" label="추가 생산 수량" />
-        </div>
+        <QuantityBox value={quantity} onChange={setQuantity} min={1} label="추가 생산 수량" />
 
         <div className="mt-3 flex justify-center gap-2">
           {QUICK_QUANTITIES.map((q) => (
@@ -98,7 +95,7 @@ function ExtraProductionForm({
 
         <p className="mt-4 min-h-6 text-center text-body-md text-gray-700">
           {selected
-            ? `${selected.name} 오늘 만든 수량 ${selected.madeToday}개 → ${selected.madeToday + quantity}개`
+            ? `오늘 만든 수량 ${selected.madeToday}개 → ${selected.madeToday + quantity}개`
             : "품목을 고르면 오늘 만든 수량이 어떻게 바뀌는지 보여드려요."}
         </p>
       </section>
@@ -111,6 +108,41 @@ function ExtraProductionForm({
           {selected ? `${selected.name} ${quantity}개 추가하기` : "품목을 선택해 주세요"}
         </CtaButton>
       </div>
+    </div>
+  );
+}
+
+/** 회색 상자 안의 수량 조절 (− 10개 +) */
+function QuantityBox({
+  value,
+  onChange,
+  min,
+  label,
+}: {
+  value: number;
+  onChange: (next: number) => void;
+  min: number;
+  label: string;
+}) {
+  const atMin = value <= min;
+  const buttonClass =
+    "flex size-12 shrink-0 items-center justify-center rounded-full text-black transition-colors active:bg-gray-200 disabled:text-gray-400 disabled:active:bg-transparent";
+
+  return (
+    <div role="group" aria-label={label} className="mt-3 flex h-16 items-center justify-between rounded-2xl bg-gray-100 px-2">
+      <button type="button" disabled={atMin} onClick={() => onChange(Math.max(min, value - 1))} aria-label={`${label} 줄이기`} className={buttonClass}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+          <path d="M6 12h12" />
+        </svg>
+      </button>
+      <output aria-live="polite" className="text-heading-sm font-bold tabular-nums">
+        {value}개
+      </output>
+      <button type="button" onClick={() => onChange(value + 1)} aria-label={`${label} 늘리기`} className={buttonClass}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+          <path d="M6 12h12M12 6v12" />
+        </svg>
+      </button>
     </div>
   );
 }

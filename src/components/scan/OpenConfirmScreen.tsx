@@ -44,11 +44,10 @@ export default function OpenConfirmScreen({ photoLabel, photoUrl, items, onBack,
     <>
       <HeaderBar title="오늘 만든 빵 확인" onBack={onBack} right={<span className="text-body-md text-gray-700">오전 진열</span>} />
 
-      <main className="px-5 pt-2">
-        <PhotoBanner label={photoLabel} photoUrl={photoUrl} heightClass="h-28" onRetake={onRetake} />
+      <main className="px-6 pt-2">
+        <PhotoBanner label={photoLabel} photoUrl={photoUrl} heightClass="h-56" controlsAt="top" onRetake={onRetake} />
 
-        <h2 className="mt-5 text-heading-sm font-bold">오늘 진열된 빵 {total}개를 찾았어요</h2>
-        <p className="mt-1 text-body-md break-keep text-gray-700">이 수량을 오늘 만든 수량으로 기록해요. 다르면 −/+로 고쳐주세요.</p>
+        <p className="mt-4 text-body-md break-keep text-gray-700">이 수량을 오늘 만든 수량으로 기록해요. 다르면 −/+로 고쳐주세요.</p>
 
         <ul className="mt-5 space-y-2">
           {rows.map((row) => (

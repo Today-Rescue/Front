@@ -1,6 +1,6 @@
 "use client";
 
-import OverlayFrame, { CardIcon } from "./OverlayFrame";
+import OverlayFrame from "./OverlayFrame";
 
 const STEPS = ["사진 올리기", "빵 종류 찾기", "개수 세기", "위험도 계산"] as const;
 
@@ -25,8 +25,7 @@ export default function AnalyzingOverlay({ currentStep, slow, onCancel, onRetry,
       label="사진 분석 중"
       card={
         <>
-          <CardIcon />
-          <h2 className="mt-1 text-title-lg font-bold break-keep">
+          <h2 className="text-title-lg font-bold break-keep">
             {slow ? "분석이 평소보다 오래 걸려요" : "사진에서 품목과 수량을 찾고 있어요."}
           </h2>
           <p className="mt-1 text-caption leading-4 break-keep text-gray-700">

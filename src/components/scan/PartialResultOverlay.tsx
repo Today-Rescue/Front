@@ -1,6 +1,6 @@
 "use client";
 
-import OverlayFrame, { CardIcon } from "./OverlayFrame";
+import OverlayFrame from "./OverlayFrame";
 
 type PartialResultOverlayProps = {
   /** 찾은 품목 수 */
@@ -22,8 +22,7 @@ export default function PartialResultOverlay({ found, total, missing, onAddShelf
       label="일부 품목만 찾았어요"
       card={
         <>
-          <CardIcon />
-          <h2 className="mt-1 text-title-lg font-bold break-keep">
+          <h2 className="text-title-lg font-bold break-keep">
             {total}개 중 {found}개 품목을 찾았어요
           </h2>
           <p className="mt-1 text-caption leading-4 break-keep text-gray-700">

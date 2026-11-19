@@ -22,15 +22,10 @@ export default function OverlayFrame({ label, card, actions, narrow = false }: O
         <div className="flex flex-1 items-center">
           <div className={`${narrow ? "mx-10" : "mx-9"} w-full rounded-3xl bg-gray-200 px-5 py-5.5 text-center text-black`}>{card}</div>
         </div>
-        <div className="px-5" style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}>
+        <div className="px-6" style={{ paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}>
           {actions}
         </div>
       </div>
     </div>
   );
-}
-
-/** 카드 맨 위 아이콘 자리. 디자인에서 아이콘이 나오면 교체 */
-export function CardIcon() {
-  return <span aria-hidden className="mx-auto block size-7 rounded-lg bg-primary-300/50" />;
 }

@@ -7,10 +7,13 @@ type PhotoBannerProps = {
   heightClass?: string;
   /** '다시 찍기' 클릭 */
   onRetake: () => void;
+  /** 라벨과 '다시 찍기' 위치. 오전-4는 top, ②는 bottom */
+  controlsAt?: "top" | "bottom";
 };
 
 /** 촬영한 매대 사진 + 라벨 + '다시 찍기' (오전-4, ② 공용) */
-export default function PhotoBanner({ label, photoUrl, heightClass = "h-28", onRetake }: PhotoBannerProps) {
+export default function PhotoBanner({ label, photoUrl, heightClass = "h-28", onRetake, controlsAt = "bottom" }: PhotoBannerProps) {
+  const edge = controlsAt === "top" ? "top-3" : "bottom-3";
   return (
     <div className={`relative overflow-hidden rounded-[20px] bg-gray-200 ${heightClass}`}>
       {photoUrl ? (
@@ -21,13 +24,13 @@ export default function PhotoBanner({ label, photoUrl, heightClass = "h-28", onR
         <span aria-hidden className="absolute top-1/2 left-1/2 size-10 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-gray-400/60" />
       )}
 
-      <span className="absolute bottom-3 left-3 rounded-full bg-primary-50 px-3 py-1.5 text-caption font-medium text-primary-700">
+      <span className={`absolute ${edge} left-3 rounded-full bg-primary-50 px-3 py-1.5 text-caption font-medium text-primary-700`}>
         {label}
       </span>
       <button
         type="button"
         onClick={onRetake}
-        className="absolute right-3 bottom-3 h-10 rounded-xl bg-white px-4 text-label-md font-bold text-primary-600 active:bg-gray-100"
+        className={`absolute right-3 ${edge} h-10 rounded-xl bg-white px-4 text-label-md font-bold text-primary-600 active:bg-gray-100`}
       >
         다시 찍기
       </button>
