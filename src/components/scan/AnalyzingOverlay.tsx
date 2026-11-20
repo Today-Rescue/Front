@@ -1,6 +1,6 @@
 "use client";
 
-import OverlayFrame from "./OverlayFrame";
+import OverlayFrame, { ManualError } from "./OverlayFrame";
 
 const STEPS = ["사진 올리기", "빵 종류 찾기", "개수 세기", "위험도 계산"] as const;
 
@@ -15,10 +15,22 @@ type AnalyzingOverlayProps = {
   onRetry: () => void;
   /** 사진 없이 빈 수량 화면으로 */
   onManual: () => void;
+  /** 직접 입력 화면을 준비하는 중이면 true (버튼 잠금) */
+  manualLoading?: boolean;
+  /** 직접 입력 실패 안내 (버튼 아래에 보여줌) */
+  manualError?: string;
 };
 
 /** ①-3 분석 지연·오류. 분석이 끝나면(스캔 결과 화면으로 이동) 부모가 이 화면을 치움 */
-export default function AnalyzingOverlay({ currentStep, slow, onCancel, onRetry, onManual }: AnalyzingOverlayProps) {
+export default function AnalyzingOverlay({
+  currentStep,
+  slow,
+  onCancel,
+  onRetry,
+  onManual,
+  manualLoading = false,
+  manualError,
+}: AnalyzingOverlayProps) {
   return (
     <OverlayFrame
       narrow
@@ -83,10 +95,12 @@ export default function AnalyzingOverlay({ currentStep, slow, onCancel, onRetry,
           <button
             type="button"
             onClick={onManual}
-            className="mx-auto mt-4 block text-label-md font-bold text-primary-300 underline underline-offset-4"
+            disabled={manualLoading}
+            className="mx-auto mt-4 block text-label-md font-bold text-primary-300 underline underline-offset-4 disabled:text-white/50"
           >
-            사진 없이 직접 입력하기
+            {manualLoading ? "불러오는 중..." : "사진 없이 직접 입력하기"}
           </button>
+          <ManualError message={manualError} />
         </>
       }
     />

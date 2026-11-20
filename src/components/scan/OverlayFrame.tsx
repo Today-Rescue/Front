@@ -29,3 +29,13 @@ export default function OverlayFrame({ label, card, actions, narrow = false }: O
     </div>
   );
 }
+
+/** '사진 없이 직접 입력하기'가 실패했을 때 버튼 아래 안내 (①-3, ①-5 공용) */
+export function ManualError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p role="alert" className="mt-2 text-center text-caption break-keep text-error-200">
+      {message}
+    </p>
+  );
+}
