@@ -80,7 +80,7 @@ export default function AnalyzingOverlay({
             <button
               type="button"
               onClick={onCancel}
-              className="h-12 shrink-0 rounded-full bg-white px-6 text-label-md font-bold text-black active:bg-gray-200"
+              className="h-12 shrink-0 rounded-full bg-white px-6 text-label-lg font-bold text-black active:bg-gray-200"
             >
               취소
             </button>

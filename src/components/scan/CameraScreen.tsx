@@ -277,7 +277,7 @@ export default function CameraScreen({
             type="button"
             onClick={() => galleryInputRef.current?.click()}
             disabled={full}
-            className="h-12 shrink-0 rounded-full bg-white px-6 text-label-md font-bold text-black transition-colors active:bg-gray-200 disabled:bg-white/20 disabled:text-white/50"
+            className="h-12 shrink-0 rounded-full bg-white px-6 text-label-lg font-bold text-black transition-colors active:bg-gray-200 disabled:bg-white/20 disabled:text-white/50"
           >
             갤러리
           </button>
