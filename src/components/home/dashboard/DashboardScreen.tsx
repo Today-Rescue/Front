@@ -63,7 +63,10 @@ export default function DashboardScreen({ week, mockOnly = false }: { week?: str
   }
 
   const { waste, discount, frequent_leftovers: leftovers, suggestion } = data;
-  const decreased = waste.change_rate !== null && waste.change_rate < 0;
+  // 서버는 비율(-0.94 = −94%, 0.63 = 63%)로 줌. 화면에는 반올림한 퍼센트로 보여줌
+  const changePercent = waste.change_rate === null ? null : Math.round(waste.change_rate * 100);
+  const salePercent = discount.sale_rate === null ? null : Math.round(discount.sale_rate * 100);
+  const decreased = changePercent !== null && changePercent < 0;
 
   return (
     <main className="pb-8">
@@ -81,14 +84,14 @@ export default function DashboardScreen({ week, mockOnly = false }: { week?: str
       <section className="mx-6 rounded-2xl bg-primary-50 px-5 py-5">
         <div className="flex items-center justify-between">
           <p className="text-body-md text-gray-700">이번 주 폐기 수량</p>
-          {waste.change_rate !== null && (
+          {changePercent !== null && (
             <span
               className={`rounded-md px-2 py-1 text-label-md font-semibold text-white ${
                 decreased ? "bg-success-300" : "bg-error-300"
               }`}
             >
-              지난주 대비 {waste.change_rate > 0 ? "+" : waste.change_rate < 0 ? "−" : ""}
-              {Math.abs(Math.round(waste.change_rate))}%
+              지난주 대비 {changePercent > 0 ? "+" : changePercent < 0 ? "−" : ""}
+              {Math.abs(changePercent)}%
             </span>
           )}
         </div>
@@ -112,7 +115,7 @@ export default function DashboardScreen({ week, mockOnly = false }: { week?: str
         </div>
         <div className="rounded-2xl bg-gray-100 px-4 py-4">
           <p className="text-caption font-medium text-gray-700">마감 세일 판매율</p>
-          <p className="mt-1 text-heading-md font-bold">{discount.sale_rate === null ? "–" : `${Math.round(discount.sale_rate)}%`}</p>
+          <p className="mt-1 text-heading-md font-bold">{salePercent === null ? "–" : `${salePercent}%`}</p>
           <p className="text-caption text-gray-600">
             {discount.target_qty > 0 ? `할인 대상 ${discount.target_qty}개 중` : "아직 마감 세일 기록이 없어요"}
           </p>

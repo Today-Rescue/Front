@@ -8,7 +8,7 @@ export type DashboardResponse = {
   waste: {
     this_week: number;
     last_week: number;
-    change_rate: number | null; // 예: -40 (지난주 대비 %). 비교할 게 없으면 null
+    change_rate: number | null; // 지난주 대비 비율. 예: -0.4 (= −40%). 비교할 게 없으면 null
     reduced: number; // 덜 버린 개수
     compared_until: string | null;
   };
@@ -16,7 +16,7 @@ export type DashboardResponse = {
     campaign_count: number;
     target_qty: number; // 할인 대상 개수
     sold_qty: number; // 할인으로 판 개수 (= 할인으로 살린 빵)
-    sale_rate: number | null; // 판매율(%)
+    sale_rate: number | null; // 판매율 비율. 예: 0.68 (= 68%). 기록이 없으면 null
   };
   daily_waste: {
     date: string;

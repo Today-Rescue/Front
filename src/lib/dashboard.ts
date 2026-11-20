@@ -33,8 +33,8 @@ export function formatWeekRange(start: string, end: string) {
 export const MOCK_DASHBOARD: DashboardResponse = {
   week_start: "2026-11-02",
   week_end: "2026-11-08",
-  waste: { this_week: 62, last_week: 104, change_rate: -40, reduced: 42, compared_until: null },
-  discount: { campaign_count: 5, target_qty: 210, sold_qty: 142, sale_rate: 68 },
+  waste: { this_week: 62, last_week: 104, change_rate: -0.4, reduced: 42, compared_until: null },
+  discount: { campaign_count: 5, target_qty: 210, sold_qty: 142, sale_rate: 0.68 },
   daily_waste: [
     { date: "2026-11-02", weekday: "mon", this_week: 18, last_week: 32 },
     { date: "2026-11-03", weekday: "tue", this_week: 12, last_week: 26 },
