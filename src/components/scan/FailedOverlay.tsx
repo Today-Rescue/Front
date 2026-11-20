@@ -1,6 +1,6 @@
 "use client";
 
-import OverlayFrame from "./OverlayFrame";
+import OverlayFrame, { ManualError } from "./OverlayFrame";
 
 type FailedOverlayProps = {
   /** notFound = 찾은 품목 없음(①-5 시안), dark = 사진이 너무 어두움(시안 없음, 같은 틀에 문구만 다르게) */
@@ -13,10 +13,22 @@ type FailedOverlayProps = {
   onRetake: () => void;
   /** 사진 없이 빈 수량 화면으로 */
   onManual: () => void;
+  /** 직접 입력 화면을 준비하는 중이면 true (버튼 잠금) */
+  manualLoading?: boolean;
+  /** 직접 입력 실패 안내 (버튼 아래에 보여줌) */
+  manualError?: string;
 };
 
 /** ①-5 인식 실패 · 직접 입력 */
-export default function FailedOverlay({ variant = "notFound", failedTwice, onGallery, onRetake, onManual }: FailedOverlayProps) {
+export default function FailedOverlay({
+  variant = "notFound",
+  failedTwice,
+  onGallery,
+  onRetake,
+  onManual,
+  manualLoading = false,
+  manualError,
+}: FailedOverlayProps) {
   return (
     <OverlayFrame
       label={variant === "dark" ? "사진이 너무 어두워요" : "찾은 품목이 없어요"}
@@ -68,10 +80,12 @@ export default function FailedOverlay({ variant = "notFound", failedTwice, onGal
           <button
             type="button"
             onClick={onManual}
-            className="mt-2 h-12 w-full rounded-full border border-white/30 text-label-md font-bold text-white active:bg-white/10"
+            disabled={manualLoading}
+            className="mt-2 h-12 w-full rounded-full border border-white/30 text-label-md font-bold text-white active:bg-white/10 disabled:text-white/50"
           >
-            사진 없이 직접 입력하기
+            {manualLoading ? "불러오는 중..." : "사진 없이 직접 입력하기"}
           </button>
+          <ManualError message={manualError} />
         </>
       }
     />

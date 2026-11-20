@@ -51,6 +51,8 @@ export default function CaptureFlow() {
   const [slow, setSlow] = useState(false);
   const [failCount, setFailCount] = useState(0);
   const [partialScan, setPartialScan] = useState<ScanApiResponse | null>(null);
+  const [manualLoading, setManualLoading] = useState(false);
+  const [manualError, setManualError] = useState("");
 
   const purpose = chosen ?? recommended ?? "open";
 
@@ -66,6 +68,8 @@ export default function CaptureFlow() {
     setChosen(null);
     setFailCount(0);
     setPartialScan(null);
+    setManualError("");
+    setManualLoading(false);
     setStep(0);
     setSlow(false);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -155,13 +159,26 @@ export default function CaptureFlow() {
 
   /** 사진 없이 직접 입력: 서버가 찾은 결과가 있으면 그 위에서, 없으면 빈 수량으로 */
   const goManual = async () => {
+    if (manualLoading) return;
     abortRef.current?.abort();
+    setManualError("");
+    setManualLoading(true);
     try {
       const scan = scanRef.current ?? (await blankScan(purpose));
       goNext(scan, 0);
     } catch {
-      setPhase("capture");
+      // 품목을 못 불러오면 직접 입력 화면을 만들 수 없음. 안내 카드는 그대로 두고 이유를 보여줌
+      setSlow(true);
+      setManualError("품목을 불러오지 못해 직접 입력할 수 없어요. 잠시 뒤에 다시 눌러 주세요.");
+    } finally {
+      setManualLoading(false);
     }
+  };
+
+  /** 다른 동작으로 넘어갈 때 직접 입력 실패 안내를 지움 */
+  const toPhase = (next: Phase) => {
+    setManualError("");
+    setPhase(next);
   };
 
   return (
@@ -193,10 +210,15 @@ export default function CaptureFlow() {
           slow={slow}
           onCancel={() => {
             abortRef.current?.abort();
-            setPhase("capture");
+            toPhase("capture");
           }}
-          onRetry={() => analyze(photosRef.current)}
+          onRetry={() => {
+            setManualError("");
+            analyze(photosRef.current);
+          }}
           onManual={goManual}
+          manualLoading={manualLoading}
+          manualError={manualError}
         />
       )}
 
@@ -217,11 +239,13 @@ export default function CaptureFlow() {
           variant={phase === "dark" ? "dark" : "notFound"}
           failedTwice={failCount >= 2}
           onGallery={() => {
-            setPhase("capture");
+            toPhase("capture");
             cameraRef.current?.openGallery();
           }}
-          onRetake={() => setPhase("capture")}
+          onRetake={() => toPhase("capture")}
           onManual={goManual}
+          manualLoading={manualLoading}
+          manualError={manualError}
         />
       )}
     </>
