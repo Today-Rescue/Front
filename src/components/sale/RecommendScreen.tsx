@@ -111,7 +111,7 @@ export default function RecommendScreen() {
             <section aria-label="내일 조건" className="mt-3 grid grid-cols-2 gap-2">
               <div className="rounded-2xl bg-gray-100 px-4 py-3">
                 <p className="text-caption text-gray-700">내일 강수확률</p>
-                <p className="mt-1 text-heading-md font-bold">{conditions.pop ?? "–"}%</p>
+                <p className="mt-1 text-heading-md font-bold">{conditions.pop == null ? "–" : `${conditions.pop}%`}</p>
                 <p className={`text-caption font-semibold ${conditions.weather_change < 0 ? "text-primary-600" : "text-gray-700"}`}>
                   {conditions.weather_change === 0 ? "평소와 비슷해요" : `손님 ${formatRate(conditions.weather_change)} 예상`}
                 </p>
