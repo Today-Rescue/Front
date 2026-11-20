@@ -228,7 +228,7 @@ export function buildHomeData(params: {
     tomorrowHoliday: false,
     firstDisplay,
     production,
-    // TODO(C): 마지막 마감 스캔 · 세일 · 세트 추천은 조회 API를 확인한 뒤 연결 (지금은 빈 상태)
+    // 마지막 마감 스캔 · 세일 · 세트 추천은 useHomeData 에서 buildClosing 으로 따로 불러와 채움
     lastScan: null,
     saleLive: false,
     bundle: null,

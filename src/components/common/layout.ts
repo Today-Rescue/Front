@@ -7,7 +7,7 @@ export const TAB_BAR_HEIGHT = 64;
 /** 하단 탭바 4칸. 경로는 팀에서 약속한 URL */
 export const TABS = [
   { key: "today", label: "오늘", href: "/" },
-  { key: "recommend", label: "추천", href: "/recommend" }, // B 담당 ⑧ (경로 B와 확인)
+  { key: "recommend", label: "추천", href: "/recommend" }, // B 담당 ⑧
   { key: "records", label: "기록", href: "/records" }, // B 담당 ⑥
   { key: "dashboard", label: "대시보드", href: "/dashboard" }, // C 담당 ⑦
 ] as const;

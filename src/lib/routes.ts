@@ -12,7 +12,7 @@ export const ROUTES = {
   onboardingItems: "/onboarding/items",
   onboardingItemNew: "/onboarding/items/new",
 
-  // A - 촬영·스캔 (주소는 A와 확인 필요)
+  // A - 촬영·스캔
   scan: "/scan", // 촬영 목적 선택 (오전-2 / ①-1)
   productionConfirm: "/scan/open/confirm", // 오전-4 만든 수량 확인 (수량 고치기)
   scanResult: "/scan/result", // ② 스캔 결과 확인 (?scan=ID)
