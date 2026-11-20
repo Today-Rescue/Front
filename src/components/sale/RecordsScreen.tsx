@@ -152,13 +152,16 @@ export default function RecordsScreen({ date }: { date?: string }) {
             <span className="text-display-sm font-bold">{total.made}개</span>
           </p>
 
-          {barTotal > 0 && (
-            <div className="mt-3 flex h-3 gap-0.5 overflow-hidden rounded-full" aria-hidden>
-              {SEGMENTS.filter((s) => total[s.key] > 0).map((s) => (
+          {/* 판매가 하나도 없는 날도 빈 회색 바를 유지 */}
+          <div
+            className={`mt-3 flex h-3 gap-0.5 overflow-hidden rounded-full ${barTotal > 0 ? "" : "bg-gray-300"}`}
+            aria-hidden
+          >
+            {barTotal > 0 &&
+              SEGMENTS.filter((s) => total[s.key] > 0).map((s) => (
                 <div key={s.key} className={s.color} style={{ width: `${(total[s.key] / barTotal) * 100}%` }} />
               ))}
-            </div>
-          )}
+          </div>
           <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5">
             {SEGMENTS.map((s) => (
               <div key={s.key} className="flex items-center gap-1.5 text-body-md">
