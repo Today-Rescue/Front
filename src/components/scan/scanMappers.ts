@@ -13,7 +13,7 @@ export function toResultItems(scan: ScanApiResponse): ScanResultItem[] {
     needsCheck: item.needs_check,
     notFound: !item.found,
     quantity: item.quantity,
-    imageUrl: item.image_url ?? undefined,
+    imageUrl: item.found ? (item.image_url ?? undefined) : undefined, // 사진에서 찾은 빵만 이미지 표시
   }));
 }
 

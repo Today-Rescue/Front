@@ -61,11 +61,20 @@ export default function FailedOverlay({
       }
       actions={
         <>
-          <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onManual}
+            disabled={manualLoading}
+            className="mb-2 h-12 w-full rounded-full border border-white/30 text-label-md font-bold text-white active:bg-white/10 disabled:text-white/50"
+          >
+            {manualLoading ? "불러오는 중..." : "사진 없이 직접 입력하기"}
+          </button>
+          <ManualError message={manualError} />
+          <div className="mt-2 flex gap-2">
             <button
               type="button"
               onClick={onGallery}
-              className="h-12 shrink-0 rounded-full bg-white px-6 text-label-md font-bold text-black active:bg-gray-200"
+              className="h-12 shrink-0 rounded-full bg-white px-6 text-label-lg font-bold text-black active:bg-gray-200"
             >
               갤러리
             </button>
@@ -77,15 +86,6 @@ export default function FailedOverlay({
               진열대 사진 찍기
             </button>
           </div>
-          <button
-            type="button"
-            onClick={onManual}
-            disabled={manualLoading}
-            className="mt-2 h-12 w-full rounded-full border border-white/30 text-label-md font-bold text-white active:bg-white/10 disabled:text-white/50"
-          >
-            {manualLoading ? "불러오는 중..." : "사진 없이 직접 입력하기"}
-          </button>
-          <ManualError message={manualError} />
         </>
       }
     />

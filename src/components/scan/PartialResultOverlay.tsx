@@ -49,7 +49,7 @@ export default function PartialResultOverlay({ found, total, missing, onAddShelf
           <button
             type="button"
             onClick={onAddShelf}
-            className="h-12 shrink-0 rounded-full bg-white px-6 text-label-md font-bold text-black active:bg-gray-200"
+            className="h-12 shrink-0 rounded-full bg-white px-6 text-label-lg font-bold text-black active:bg-gray-200"
           >
             매대 더 찍기
           </button>
