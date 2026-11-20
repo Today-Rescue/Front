@@ -41,7 +41,7 @@ export default function TabBar() {
   );
 }
 
-/** 임시 아이콘. 디자인에서 아이콘이 나오면 교체 */
+/** 탭 아이콘 (오늘 · 추천 · 기록 · 대시보드) */
 function TabIcon({ tab, active }: { tab: TabKey; active: boolean }) {
   const color = active ? "var(--color-primary-500)" : "var(--color-gray-700)";
   const common = {
